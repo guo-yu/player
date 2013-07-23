@@ -1,0 +1,26 @@
+{
+  "name": "player",
+  "version": "0.0.1",
+  "description": "a cli player based on node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/turingou/player.git"
+  },
+  "keywords": [
+    "player",
+    "mp3"
+  ],
+  "author": "turingou",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/turingou/player/issues"
+  },
+  "dependencies": {
+    "speaker": "*",
+    "lame": "*"
+  }
+}
