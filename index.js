@@ -17,7 +17,7 @@ exports.add = function(src) {
 
 exports.play = function(song) {
     
-    var play = function(p) {
+    var play = function(p,cb) {
         p.pipe( new lame.Decoder())
             .on('format',function(f){
                 this.pipe(new Speaker(f))
