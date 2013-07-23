@@ -1,6 +1,6 @@
 {
   "name": "player",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a cli player based on node",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "speaker": "*",
-    "lame": "*"
+    "lame": "*",
+    "async": "*"
   }
 }

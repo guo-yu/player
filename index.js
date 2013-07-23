@@ -8,21 +8,39 @@
 
 var lame = require('lame'),
     Speaker = require('speaker'),
-    fs = require('fs');
+    fs = require('fs'),
+    async = require('async');
 
 exports.add = function(src) {
     return fs.createReadStream(src);
 };
 
-exports.play = function(player) {
-    player.pipe( new lame.Decoder())
+exports.play = function(song) {
+    
+    var play = function(p) {
+        p.pipe( new lame.Decoder())
             .on('format',function(f){
                 this.pipe(new Speaker(f))
+            })
+            .on('finish',function(){
+                cb();
             });
-    return player;
+    };
+
+    if (song.length) {
+        async.eachSeries(song,play,function(err){
+            if (!err) {
+                console.log('done')
+            }
+        });
+    } else {
+        play(song)
+    }
+
+    return song;
 };
 
-exports.stop = function(player) {
-    player.unpipe();
+exports.stop = function(song) {
+    song.unpipe();
     return false;
 }
