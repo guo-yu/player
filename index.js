@@ -16,10 +16,10 @@ exports.add = function(src) {
 
 exports.play = function(player) {
     player.pipe( new lame.Decoder())
-    .on('format',function(f){
-        this.pipe(new Speaker(f))
-    });
-    return single;
+            .on('format',function(f){
+                this.pipe(new Speaker(f))
+            });
+    return player;
 };
 
 exports.stop = function(player) {
