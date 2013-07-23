@@ -15,32 +15,43 @@ exports.add = function(src) {
     return fs.createReadStream(src);
 };
 
-exports.play = function(song) {
-    
+exports.play = function(song,callback) {
+
     var play = function(p,cb) {
-        p.pipe( new lame.Decoder())
-            .on('format',function(f){
-                this.pipe(new Speaker(f))
-            })
-            .on('finish',function(){
+
+        var playWrite = p.pipe( new lame.Decoder() );
+
+        playWrite.on('format',function(f){
+            this.pipe(new Speaker(f));
+        })
+
+        playWrite.on('finish',function(){
+            if (cb) {
                 cb();
-            });
+            }
+        });
+
     };
 
     if (song.length) {
         async.eachSeries(song,play,function(err){
             if (!err) {
-                console.log('done')
+                if (typeof(callback) == 'function') {
+                    callback()
+                }
             }
         });
     } else {
-        play(song)
+        play(song,callback)
     }
 
-    return song;
 };
 
 exports.stop = function(song) {
     song.unpipe();
     return false;
+}
+
+exports.pause = function(song) {
+    song.pause();
 }
