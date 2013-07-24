@@ -9,12 +9,19 @@
 var lame = require('lame'),
     Speaker = require('speaker'),
     fs = require('fs'),
-    async = require('async');
+    async = require('async'),
+    request = require('request');
 
+// 这里的src可以是地址，也可以是url，会转换成stream
 exports.add = function(src) {
-    return fs.createReadStream(src);
+    if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
+        return request(src);
+    } else {
+        return fs.createReadStream(src);
+    }
 };
 
+// 播放
 exports.play = function(song,callback) {
 
     var play = function(p,cb) {
@@ -47,11 +54,13 @@ exports.play = function(song,callback) {
 
 };
 
+// 停止
 exports.stop = function(song) {
     song.unpipe();
     return false;
 }
 
+// 暂停
 exports.pause = function(song) {
     song.pause();
 }
