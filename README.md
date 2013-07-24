@@ -1,6 +1,6 @@
 # ![logo](http://ww2.sinaimg.cn/large/61ff0de3gw1e6xuxefgj1j200u00ugld.jpg) player ![](https://badge.fury.io/js/player.png)
 
-基于nodejs的命令行播放器
+基于nodejs的命令行播放器，支持本地播放，播放列表，从url播放等设置。
 
 ### 如何安装
 

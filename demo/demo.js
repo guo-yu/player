@@ -8,6 +8,6 @@ var song2 = player.add( __dirname + '/demo2.mp3');
 var websong = player.add( 'http://mr4.douban.com/201307241505/dea5ad99cf4676846599982159ba1bd9/view/song/small/p1948904.mp3' )
 
 // 马上播放demo.mp3
-player.play([song1,song2],function(){
+player.play([song,song2],function(){
     console.log('done!!!')
 });
