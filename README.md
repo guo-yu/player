@@ -15,8 +15,8 @@ var player = require('player');
 var song = player.add( __dirname + '/demo.mp3');
 var song2 = player.add( __dirname + '/demo2.mp3');
 
-// 从url播放
-var websong = player.add( 'http://mr4.douban.com/201307241505/dea5ad99cf4676846599982159ba1bd9/view/song/small/p1948904.mp3' )
+// 从url播放，这个地址必须要求豆瓣电台登录（有cookie），如果直接播放这个地址跳出说明返回失败，请先在web版豆瓣电台上登录。然后执行demo
+var websong = player.add( 'http://mr4.douban.com/201307241910/437febf501be2c32d3d0cccb7ce1353d/view/song/small/p1949332.mp3' )
 
 // 马上播放demo.mp3
 player.play(song,function(){
