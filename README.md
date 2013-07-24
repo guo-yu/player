@@ -12,11 +12,11 @@
 var player = require('player');
 
 // 播放demo.mp3
-var song = player.add( __dirname + '/demo.mp3');
-var song2 = player.add( __dirname + '/demo2.mp3');
+var song =  __dirname + '/demo.mp3';
+var song2 =  __dirname + '/demo2.mp3';
 
 // 从url播放，这个地址必须要求豆瓣电台登录（有cookie），如果直接播放这个地址跳出说明返回失败，请先在web版豆瓣电台上登录。然后执行demo
-var websong = player.add( 'http://mr4.douban.com/201307241910/437febf501be2c32d3d0cccb7ce1353d/view/song/small/p1949332.mp3' )
+var websong = 'http://mr4.douban.com/201307241910/437febf501be2c32d3d0cccb7ce1353d/view/song/small/p1949332.mp3';
 
 // 马上播放demo.mp3
 player.play(song,function(){
@@ -30,7 +30,7 @@ player.play([song,song2],function(){
 
 // 3秒后停止播放
 setTimeout(function(){
-    player.stop(song);
+    player.stop();
 },3000);
 ````
 

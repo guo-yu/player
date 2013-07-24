@@ -12,39 +12,42 @@ var lame = require('lame'),
     async = require('async'),
     request = require('request');
 
-// 这里的src可以是地址，也可以是url，会转换成stream
-exports.add = function(src) {
+var player = {};
+
+// 读取文件流
+exports.read = function(src,cb) {
     if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
-        return request(src);
+        cb(request(src));
     } else {
-        return fs.createReadStream(src);
+        cb(fs.createReadStream(src));
     }
-};
+}
 
 // 播放
 exports.play = function(song,callback) {
 
-    var play = function(p,cb) {
+    player['list'] = [];
 
-        var playWrite = p.pipe( new lame.Decoder() );
-
-        playWrite.on('format',function(f){
-            this.pipe(new Speaker(f));
-        })
-
-        playWrite.on('finish',function(){
-            if (cb) {
-                cb();
-            }
+    var play = function(dist,cb) {
+        exports.read(dist,function(p){
+            player.list.push(p);
+            p.pipe(new lame.Decoder())
+                .on('format',function(f){
+                    this.pipe(new Speaker(f));
+                })
+                .on('finish',function(){
+                    if (cb) {
+                        cb();
+                    }
+                });
         });
-
     };
 
     if (song.length) {
         async.eachSeries(song,play,function(err){
             if (!err) {
                 if (typeof(callback) == 'function') {
-                    callback()
+                    callback(player)
                 }
             }
         });
@@ -55,12 +58,11 @@ exports.play = function(song,callback) {
 };
 
 // 停止
-exports.stop = function(song) {
-    song.unpipe();
+exports.stop = function() {
+    if (player.list && player.list.length) {
+        for (var i = 0; i < playList.length; i++) {
+            playList[i].unpipe()
+        };
+    }
     return false;
-}
-
-// 暂停
-exports.pause = function(song) {
-    song.pause();
 }
