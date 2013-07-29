@@ -46,6 +46,15 @@ _Player.prototype.changeStatus = function(status, dist) {
     }
 }
 
+// 停止播放
+_Player.prototype.stop = function() {
+    if (this.streams && this.streams.length && this.streams.length > 0) {
+        this.streams[this.streams.length - 1].unpipe();
+    } else {
+        return false;
+    }
+}
+
 // 读取文件流
 exports.read = function(src, cb) {
     if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
@@ -75,6 +84,9 @@ exports.play = function(songs, callback) {
                 .on('error', function(err){
                     player.changeStatus('error', dist);
                 })
+                .on('unpipe',function(){
+                    console.log('dismissed!!!')
+                })
                 .on('finish', function() {
                     if (cb) {
                         player.changeStatus('playend', dist);
@@ -96,13 +108,3 @@ exports.play = function(songs, callback) {
         return player;
     }
 };
-
-// 停止
-exports.stop = function(list) {
-    if (list.streams && list.streams.length) {
-        for (var i = 0; i < list.streams.length; i++) {
-            list.streams[i].unpipe()
-        };
-    }
-    return false;
-}

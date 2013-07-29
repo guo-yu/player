@@ -11,13 +11,14 @@
 ````javascript
 var Player = require('player');
 
-// 马上播放单曲：demo.mp3
-Player.play(song,function(){
+// 播放单曲
+var src = './xxx.mp3';
+Player.play(src,function(){
     console.log('done!')
 });
 
 // 按列表顺序播放并获取实例化的播放列表
-Player.play([
+var player = Player.play([
     __dirname + '/demo.mp3',
     __dirname + '/demo2.mp3',
     __dirname + '/demo.mp3',
@@ -27,16 +28,25 @@ Player.play([
     // 当全部播放完成后，获取实例化的player
     console.log(player)
     console.log('done!!!')
-}).on('playing',function(item){
+});
+
+player.on('playing',function(item){
     // 监听正在播放的曲目
     console.log('im playing... id:' + item.sid);
-}).on('playend',function(item){
+});
+
+player.on('playend',function(item){
     // 当一首歌播放完时
     console.log('id:' + item.sid + ' play done, switching to next one ...');
-}).on('error', function(err){
+});
+
+player.on('error', function(err){
     // 当流媒体出现播放错误时
     console.log(err);
 });
+
+// 停止播放
+player.stop();
 ````
 
 ### 戴上耳机，试试看：
@@ -55,6 +65,7 @@ $ node ./demo/demo.js
 
 ### Changelog
 
+- `0.0.7` 修复了停止音乐播放的bug
 - `0.0.6` 增加当前播放进度的支持，新增事件监听接口
 - `0.0.5` 修复播放列表的几处bug
 - `0.0.4` 新增从url播放的接口
