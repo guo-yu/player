@@ -1,6 +1,6 @@
 {
   "name": "player",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "a cli player based on node",
   "main": "index.js",
   "scripts": {

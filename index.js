@@ -75,17 +75,15 @@ exports.play = function(songs, callback) {
 
     var play = function(dist, cb) {
         exports.read(dist.src, function(p) {
-            player.streams.push(p);
-            p.pipe(new lame.Decoder())
+            var l = new lame.Decoder();
+            player.streams.push(l);
+            p.pipe(l)
                 .on('format', function(f) {
                     this.pipe(new Speaker(f));
                     player.changeStatus('playing', dist);
                 })
                 .on('error', function(err){
                     player.changeStatus('error', dist);
-                })
-                .on('unpipe',function(){
-                    console.log('dismissed!!!')
                 })
                 .on('finish', function() {
                     if (cb) {

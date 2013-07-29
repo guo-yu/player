@@ -14,10 +14,10 @@ var player = Player.play([
 player.on('playing',function(item){
     // 监听正在播放的曲目
     console.log('im playing... id:' + item.sid);
-    setTimeout(function(){
-        console.log('it is time!!!')
-        player.stop();
-    },2000);
+    // setTimeout(function(){
+    //     console.log('it is time!!!')
+    //     player.stop();
+    // },2000);
 })
 
 player.on('playend',function(item){
