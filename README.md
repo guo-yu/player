@@ -70,6 +70,8 @@ $ node ./demo/demo.js
 
 ## Changelog
 
+- `0.0.9` bugs fixed 
+- `0.0.8` bugs fixed 
 - `0.0.7` bugs fixed 修复了停止音乐播放的bug
 - `0.0.6` player status supported 增加当前播放进度的支持，新增事件监听接口
 - `0.0.5` bugs fixed 修复播放列表的几处bug

@@ -14,6 +14,7 @@ var lame = require('lame'),
 
 var _Player = function(list) {
     this.streams = [];
+    this.speakers = [];
     this.list = [];
     this.status = 'ready';
     var self = this;
@@ -47,9 +48,9 @@ _Player.prototype.changeStatus = function(status, dist) {
 }
 
 // 停止播放
-// 这样停止会造成一个问题，就是speaker也需要停止，不然会一直报错。
 _Player.prototype.stop = function() {
     if (this.streams && this.streams.length && this.streams.length > 0) {
+        this.speakers[this.speakers.length - 1].unpipe();
         this.streams[this.streams.length - 1].unpipe();
         return false;
     } else {
@@ -77,16 +78,16 @@ exports.play = function(songs, callback) {
     }
 
     var play = function(dist, cb) {
+        // reading file from url may occurs read error
         exports.read(dist.src, function(p) {
             var l = new lame.Decoder();
             player.streams.push(l);
             p.pipe(l)
                 .on('format', function(f) {
-                    this.pipe(new Speaker(f));
+                    var s = new Speaker(f);
+                    this.pipe(s);
+                    player.speakers.push(this);
                     player.changeStatus('playing', dist);
-                })
-                .on('error', function(err){
-                    player.changeStatus('error', dist);
                 })
                 .on('finish', function() {
                     if (cb) {
@@ -94,6 +95,9 @@ exports.play = function(songs, callback) {
                         cb();
                     }
                 });
+            p.on('error', function(err) {
+                player.changeStatus('error', err);
+            });
         });
     };
 
