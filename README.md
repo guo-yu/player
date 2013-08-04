@@ -1,12 +1,13 @@
 # ![logo](http://ww2.sinaimg.cn/large/61ff0de3gw1e6xuxefgj1j200u00ugld.jpg) player ![](https://badge.fury.io/js/player.png)
 
 a cli wrapper of node-lamp/node-speaker, support play `.mp3` audio file both from url and local songs. 
+
 基于nodejs的命令行播放器，支持本地播放，播放列表，从url播放等设置；支持事件监听，比如捕获当前播放的歌曲，当前歌曲播放状态（是否完成）。
 
 ## How to install
 
 ````
-npm install player
+$ npm install player
 ````
 
 ## Sample code
