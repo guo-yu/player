@@ -47,9 +47,11 @@ _Player.prototype.changeStatus = function(status, dist) {
 }
 
 // 停止播放
+// 这样停止会造成一个问题，就是speaker也需要停止，不然会一直报错。
 _Player.prototype.stop = function() {
     if (this.streams && this.streams.length && this.streams.length > 0) {
         this.streams[this.streams.length - 1].unpipe();
+        return false;
     } else {
         return false;
     }
@@ -58,6 +60,7 @@ _Player.prototype.stop = function() {
 // 读取文件流
 exports.read = function(src, cb) {
     if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
+        // 直接这样返回stream是无法unpipe的
         cb(request(src));
     } else {
         cb(fs.createReadStream(src));
