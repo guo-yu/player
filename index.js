@@ -12,7 +12,7 @@ var lame = require('lame'),
     async = require('async'),
     request = require('request');
 
-var _Player = function(list) {
+var Player = function(list) {
     this.streams = [];
     this.speakers = [];
     this.list = [];
@@ -29,7 +29,7 @@ var _Player = function(list) {
 }
 
 // 监听事件
-_Player.prototype.on = function(event, cb) {
+Player.prototype.on = function(event, cb) {
     // 将事件监听寄存在对象里，不立即执行
     if (!this.event) {
         this.event = {};
@@ -39,7 +39,7 @@ _Player.prototype.on = function(event, cb) {
 }
 
 // 改变播放情况
-_Player.prototype.changeStatus = function(status, dist) {
+Player.prototype.changeStatus = function(status, dist) {
     this.status = status;
     this[status] = dist;
     if (this.event && this.event[status] && typeof(this.event[status]) == 'function') {
@@ -48,7 +48,7 @@ _Player.prototype.changeStatus = function(status, dist) {
 }
 
 // 停止播放
-_Player.prototype.stop = function() {
+Player.prototype.stop = function() {
     if (this.streams && this.streams.length && this.streams.length > 0) {
         this.speakers[this.speakers.length - 1].unpipe();
         this.streams[this.streams.length - 1].unpipe();
@@ -73,7 +73,7 @@ exports.play = function(songs, callback) {
 
     var init = function(song) {
         var list = (typeof(song) == 'string') ? [song] : song;
-        var player = new _Player(list);
+        var player = new Player(list);
         return player;
     }
 
