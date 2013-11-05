@@ -16,33 +16,33 @@ $ npm install player
 var Player = require('player');
 
 // create player instance
-var src = './xxx.mp3';
-Player.play(src,function(){
-    console.log('done!')
+var player = new Player('./xxx.mp3');
+
+player.play(function(player){
+    console.log('playend!')
 });
 
 // create play-list player instance
-var player = Player.play([
+var player = Player([
     __dirname + '/demo.mp3',
     __dirname + '/demo2.mp3',
     __dirname + '/demo.mp3',
     // play .mp3 file from a URL
-    // 从url播放，这个地址必须要求豆瓣电台登录（有cookie），如果直接播放这个地址跳出说明返回失败，请先在web版豆瓣电台上登录。然后执行demo
+    // 从url播放，这个地址必须要求豆瓣电台登录（有cookie），
+    // 如果直接播放这个地址跳出说明返回失败，请先在web版豆瓣电台上登录。然后执行demo
     'http://mr4.douban.com/201307241910/437febf501be2c32d3d0cccb7ce1353d/view/song/small/p1949332.mp3'
-],function(player){
-    // play done
-    console.log(player)
-    console.log('done!!!')
-});
+]);
+
+player.play();
 
 player.on('playing',function(item){
     // return playing item(object)
-    console.log('im playing... id:' + item.sid);
+    console.log('im playing... src:' + item);
 });
 
 player.on('playend',function(item){
     // return a playend item
-    console.log('id:' + item.sid + ' play done, switching to next one ...');
+    console.log('src:' + item + ' play done, switching to next one ...');
 });
 
 player.on('error', function(err){
