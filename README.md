@@ -18,7 +18,7 @@ var Player = require('player');
 // create player instance
 var player = new Player('./xxx.mp3');
 
-player.play(function(player){
+player.play(function(err, player){
     console.log('playend!')
 });
 

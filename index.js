@@ -1,7 +1,7 @@
 /**
  *
- * command line interface mp3 player based on Node.js
- * @author: [turingou]
+ * @brief: command line interface mp3 player based on Node.js
+ * @author: [turingou](http://guoyu.me)
  * @created: [2013/07/20]
  *
  **/
@@ -10,53 +10,62 @@ var fs = require('fs'),
     lame = require('lame'),
     async = require('async'),
     Speaker = require('speaker'),
-    request = require('request');
+    request = require('request'),
+    path = require('path');
+
+var getUserHome = function() {
+    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+};
 
 var fetchName = function(str) {
     return str.substr(str.lastIndexOf('/') + 1);
 };
 
-var Player = function(songs) {
+var Player = function(songs, params) {
     this.streams = [];
     this.speakers = [];
     if (songs) this.list = (typeof(songs) === 'string') ? [songs] : songs;
     this.status = 'ready';
+    this.src = params && params.srckey ? params.srckey : 'src';
+    this.downloads = params && params.downloads ? params.downloads : getUserHome();
 }
 
 // 播放
-Player.prototype.play = function(done) {
+Player.prototype.play = function(done, selected) {
     var self = this;
     var play = function(song, cb) {
-        self.read((typeof(song) === 'string') ? song : song.src, function(p) {
-            var l = new lame.Decoder();
-            self.streams.push(l);
-            p.pipe(l)
-                .on('format', function(f) {
-                    var s = new Speaker(f);
-                    this.pipe(s);
-                    self.speakers.push(this);
-                    self.changeStatus('playing', song);
-                })
-                .on('finish', function() {
-                    self.changeStatus('playend', song);
-                    if (cb) cb();
+        self.read((typeof(song) === 'string') ? song : song[self.src], function(err, p) {
+            if (!err) {
+                var l = new lame.Decoder();
+                self.streams.push(l);
+                p.pipe(l)
+                    .on('format', function(f) {
+                        var s = new Speaker(f);
+                        this.pipe(s);
+                        self.speakers.push(this);
+                        self.changeStatus('playing', song);
+                    })
+                    .on('finish', function() {
+                        self.changeStatus('playend', song);
+                        cb(null); // switch to next one
+                    });
+                p.on('error', function(err) {
+                    self.changeStatus('error', err);
+                    cb(err);
                 });
-            p.on('error', function(err) {
-                self.changeStatus('error', err);
-            });
+            } else {
+                cb(err);
+            }
         });
     };
     if (self.list.length > 0) {
-        async.eachSeries(self.list, play, function(err) {
-            if (!err) {
-                if (typeof(done) === 'function') {
-                    done(self);
-                } else {
-                    return true;
-                }
+        async.eachSeries(selected ? selected : self.list, play, function(err) {
+            if (typeof(done) === 'function') {
+                done(err, self);
             } else {
-                throw err;
+                if (err) throw err;
             }
+            return true;
         });
         return self;
     } else {
@@ -96,13 +105,14 @@ Player.prototype.stop = function() {
 }
 
 Player.prototype.download = function(src, callback) {
+    var self = this;
     request.get(src, {
         encoding: null
     }, function(err, res, buff) {
         if (!err) {
             var filename = fetchName(src);
-            fs.writeFile(filename, buff, function(err) {
-                callback(err, filename);
+            fs.writeFile(path.join(self.downloads, filename), buff, function(err) {
+                callback(err, path.join(self.downloads, filename));
             });
         } else {
             callback(err);
@@ -114,23 +124,22 @@ Player.prototype.read = function(src, callback) {
     var self = this;
     if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
         var filename = fetchName(src);
-        fs.exists(filename, function(exists) {
+        fs.exists(path.join(self.downloads, filename), function(exists) {
             if (exists) {
-                callback(fs.createReadStream(filename));
+                callback(null, fs.createReadStream(path.join(self.downloads, filename)));
             } else {
                 self.changeStatus('downloading', src);
                 self.download(src, function(err, file) {
                     if (!err) {
-                        callback(fs.createReadStream(file));
+                        callback(null, fs.createReadStream(file));
                     } else {
-                        throw err;
+                        callback(err);
                     }
                 });
             }
         });
-        // callback(request(src));
     } else {
-        callback(fs.createReadStream(src));
+        callback(null, fs.createReadStream(src));
     }
 }
 
