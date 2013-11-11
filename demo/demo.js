@@ -2,7 +2,8 @@ var Player = require('../index');
 
 // 播放
 var player = new Player([
-    __dirname + '/demo.mp3'
+    __dirname + '/demo.mp3',
+    __dirname + '/demo2.mp3'
 ]);
 
 player.play(function(err, p){
@@ -15,10 +16,10 @@ player.on('downloading',function(item){
 
 player.on('playing',function(item){
     console.log('im playing... id:' + item);
-    // setTimeout(function(){
-    //     console.log('it is gona stop !!!');
-    //     player.stop();
-    // },3000);
+    setTimeout(function(){
+        // console.log('it is gona stop !!!');
+        player.next();
+    },3000);
 });
 
 player.on('playend',function(item){

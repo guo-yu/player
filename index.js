@@ -21,10 +21,26 @@ var fetchName = function(str) {
     return str.substr(str.lastIndexOf('/') + 1);
 };
 
+var washSongs = function(list) {
+    var songs = [];
+    list.forEach(function(item, index){
+        if (typeof(item) === 'object') {
+            item._id = index;
+            songs.push(item);
+        } else {
+            songs.push({
+                src: item,
+                _id: index
+            });
+        }
+    });
+    return songs;
+};
+
 var Player = function(songs, params) {
     this.streams = [];
     this.speakers = [];
-    if (songs) this.list = (typeof(songs) === 'string') ? [songs] : songs;
+    if (songs) this.list = (typeof(songs) === 'string') ? [{src: songs, _id: 0}] : washSongs(songs);
     this.status = 'ready';
     this.src = params && params.srckey ? params.srckey : 'src';
     this.downloads = params && params.downloads ? params.downloads : getUserHome();
@@ -32,7 +48,9 @@ var Player = function(songs, params) {
 
 // 播放
 Player.prototype.play = function(done, selected) {
-    var self = this;
+    var self = this,
+        songs = selected ? selected : self.list;
+    if (!this.done && typeof(done) === 'function') self._done = done;
     var play = function(song, cb) {
         self.read((typeof(song) === 'string') ? song : song[self.src], function(err, p) {
             if (!err) {
@@ -42,7 +60,10 @@ Player.prototype.play = function(done, selected) {
                     .on('format', function(f) {
                         var s = new Speaker(f);
                         this.pipe(s);
-                        self.speakers.push(this);
+                        self.speakers.push({
+                            rs: this,
+                            speaker: s
+                        });
                         self.changeStatus('playing', song);
                     })
                     .on('finish', function() {
@@ -59,7 +80,7 @@ Player.prototype.play = function(done, selected) {
         });
     };
     if (self.list.length > 0) {
-        async.eachSeries(selected ? selected : self.list, play, function(err) {
+        async.eachSeries(songs, play, function(err) {
             if (typeof(done) === 'function') {
                 done(err, self);
             } else {
@@ -72,6 +93,23 @@ Player.prototype.play = function(done, selected) {
         return false;
     }
 };
+
+Player.prototype.next = function() {
+    if (this.status === 'playing') {
+        var playing = this.playing,
+            list = this.list,
+            next = list[playing._id + 1];
+        if (next) { 
+            this.stop();
+            this.play(this._done ? this._done : null, list.slice(next._id));
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
 
 Player.prototype.add = function(song) {
     if (!this.list) this.list = [];
@@ -96,8 +134,8 @@ Player.prototype.changeStatus = function(status, dist) {
 
 Player.prototype.stop = function() {
     if (this.streams && this.streams.length && this.streams.length > 0) {
-        this.speakers[this.speakers.length - 1].unpipe();
-        this.streams[this.streams.length - 1].unpipe();
+        this.speakers[this.speakers.length - 1].rs.unpipe();
+        this.speakers[this.speakers.length - 1].speaker.end();
         return false;
     } else {
         return false;
