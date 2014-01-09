@@ -11,39 +11,17 @@ var fs = require('fs'),
     async = require('async'),
     Speaker = require('speaker'),
     request = require('request'),
-    path = require('path');
-
-var getUserHome = function() {
-    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-};
-
-var fetchName = function(str) {
-    return str.substr(str.lastIndexOf('/') + 1);
-};
-
-var washSongs = function(list) {
-    var songs = [];
-    list.forEach(function(item, index){
-        if (typeof(item) === 'object') {
-            item._id = index;
-            songs.push(item);
-        } else {
-            songs.push({
-                src: item,
-                _id: index
-            });
-        }
-    });
-    return songs;
-};
+    path = require('path'),
+    utils = require('./libs/utils');
 
 var Player = function(songs, params) {
+    if (!songs) return false;
     this.streams = [];
     this.speakers = [];
-    if (songs) this.list = (typeof(songs) === 'string') ? [{src: songs, _id: 0}] : washSongs(songs);
+    this.list = (typeof(songs) === 'string') ? [{src: songs, _id: 0}] : utils.format(songs);
     this.status = 'ready';
     this.src = params && params.srckey ? params.srckey : 'src';
-    this.downloads = params && params.downloads ? params.downloads : getUserHome();
+    this.downloads = params && params.downloads ? params.downloads : utils.getUserHome();
 }
 
 // 播放
@@ -53,62 +31,47 @@ Player.prototype.play = function(done, selected) {
     if (!this.done && typeof(done) === 'function') self._done = done;
     var play = function(song, cb) {
         self.read((typeof(song) === 'string') ? song : song[self.src], function(err, p) {
-            if (!err) {
-                var l = new lame.Decoder();
-                self.streams.push(l);
-                p.pipe(l)
-                    .on('format', function(f) {
-                        var s = new Speaker(f);
-                        this.pipe(s);
-                        self.speakers.push({
-                            rs: this,
-                            speaker: s
-                        });
-                        self.changeStatus('playing', song);
-                    })
-                    .on('finish', function() {
-                        self.changeStatus('playend', song);
-                        cb(null); // switch to next one
+            if (err) return cb(err);
+            var l = new lame.Decoder();
+            self.streams.push(l);
+            p.pipe(l)
+                .on('format', function(f) {
+                    var s = new Speaker(f);
+                    this.pipe(s);
+                    self.speakers.push({
+                        rs: this,
+                        speaker: s
                     });
-                p.on('error', function(err) {
-                    self.changeStatus('error', err);
-                    cb(err);
+                    self.changeStatus('playing', song);
+                })
+                .on('finish', function() {
+                    self.changeStatus('playend', song);
+                    cb(null); // switch to next one
                 });
-            } else {
+            p.on('error', function(err) {
+                self.changeStatus('error', err);
                 cb(err);
-            }
+            });
         });
     };
-    if (self.list.length > 0) {
-        async.eachSeries(songs, play, function(err) {
-            if (typeof(done) === 'function') {
-                done(err, self);
-            } else {
-                if (err) throw err;
-            }
-            return true;
-        });
-        return self;
-    } else {
-        return false;
-    }
+    if (self.list.length <= 0) return false;
+    async.eachSeries(songs, play, function(err) {
+        if (err) throw err;
+        if (typeof(done) === 'function') done(err, self);
+        return true;
+    });
+    return self;
 };
 
 Player.prototype.next = function() {
-    if (this.status === 'playing') {
-        var playing = this.playing,
-            list = this.list,
-            next = list[playing._id + 1];
-        if (next) { 
-            this.stop();
-            this.play(this._done ? this._done : null, list.slice(next._id));
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    if (this.status !== 'playing') return false;
+    var playing = this.playing,
+        list = this.list,
+        next = list[playing._id + 1];
+    if (!next) return false;
+    this.stop();
+    this.play(this._done ? this._done : null, list.slice(next._id));
+    return true;
 }
 
 Player.prototype.add = function(song) {
@@ -117,9 +80,7 @@ Player.prototype.add = function(song) {
 }
 
 Player.prototype.on = function(event, callback) {
-    if (!this.event) {
-        this.event = {};
-    }
+    if (!this.event) this.event = {};
     this.event[event] = callback;
     return this;
 }
@@ -133,13 +94,10 @@ Player.prototype.changeStatus = function(status, dist) {
 }
 
 Player.prototype.stop = function() {
-    if (this.streams && this.streams.length && this.streams.length > 0) {
-        this.speakers[this.speakers.length - 1].rs.unpipe();
-        this.speakers[this.speakers.length - 1].speaker.end();
-        return false;
-    } else {
-        return false;
-    }
+    if (!(this.streams && this.streams.length && this.streams.length > 0)) return false;
+    this.speakers[this.speakers.length - 1].rs.unpipe();
+    this.speakers[this.speakers.length - 1].speaker.end();
+    return false;
 }
 
 Player.prototype.download = function(src, callback) {
@@ -147,38 +105,26 @@ Player.prototype.download = function(src, callback) {
     request.get(src, {
         encoding: null
     }, function(err, res, buff) {
-        if (!err) {
-            var filename = fetchName(src);
-            fs.writeFile(path.join(self.downloads, filename), buff, function(err) {
-                callback(err, path.join(self.downloads, filename));
-            });
-        } else {
-            callback(err);
-        }
+        if (err) return callback(err);
+        var filename = utils.fetchName(src);
+        fs.writeFile(path.join(self.downloads, filename), buff, function(err) {
+            callback(err, path.join(self.downloads, filename));
+        });
     });
 }
 
 Player.prototype.read = function(src, callback) {
     var self = this;
-    if (src.indexOf('http') == 0 || src.indexOf('https') == 0) {
-        var filename = fetchName(src);
-        fs.exists(path.join(self.downloads, filename), function(exists) {
-            if (exists) {
-                callback(null, fs.createReadStream(path.join(self.downloads, filename)));
-            } else {
-                self.changeStatus('downloading', src);
-                self.download(src, function(err, file) {
-                    if (!err) {
-                        callback(null, fs.createReadStream(file));
-                    } else {
-                        callback(err);
-                    }
-                });
-            }
+    if (!(src.indexOf('http') == 0 || src.indexOf('https') == 0)) return callback(null, fs.createReadStream(src));
+    var filename = utils.fetchName(src);
+    fs.exists(path.join(self.downloads, filename), function(exists) {
+        if (exists) return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
+        self.changeStatus('downloading', src);
+        self.download(src, function(err, file) {
+            if (err) return callback(err);
+            callback(null, fs.createReadStream(file));
         });
-    } else {
-        callback(null, fs.createReadStream(src));
-    }
+    });
 }
 
 module.exports = Player;
