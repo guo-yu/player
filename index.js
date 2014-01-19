@@ -102,15 +102,14 @@ Player.prototype.stop = function() {
 
 Player.prototype.download = function(src, callback) {
     var self = this;
-    request.get(src, {
+    var readable = request.get(src, {
         encoding: null
     }, function(err, res, buff) {
         if (err) return callback(err);
         var filename = utils.fetchName(src);
-        fs.writeFile(path.join(self.downloads, filename), buff, function(err) {
-            callback(err, path.join(self.downloads, filename));
-        });
+        fs.writeFile(path.join(self.downloads, filename), buff, function () {});
     });
+    callback(null, readable);
 }
 
 Player.prototype.read = function(src, callback) {
@@ -120,9 +119,9 @@ Player.prototype.read = function(src, callback) {
     fs.exists(path.join(self.downloads, filename), function(exists) {
         if (exists) return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
         self.changeStatus('downloading', src);
-        self.download(src, function(err, file) {
+        self.download(src, function(err, readable) {
             if (err) return callback(err);
-            callback(null, fs.createReadStream(file));
+            callback(null, readable);
         });
     });
 }
