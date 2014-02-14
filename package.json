@@ -24,6 +24,6 @@
     "speaker": "*",
     "lame": "*",
     "async": "*",
-    "request": "*"
+    "pool_stream": "*"
   }
 }
