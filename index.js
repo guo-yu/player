@@ -140,7 +140,7 @@ Player.prototype.read = function(src, callback) {
     }
     var filename = utils.fetchName(src);
     fs.exists(path.join(self.downloads, filename), function(exists) {
-        if (false && exists) {
+        if (exists) {
             return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
         }
         self.changeStatus('downloading', src);
