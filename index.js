@@ -10,9 +10,11 @@ var fs = require('fs'),
     lame = require('lame'),
     async = require('async'),
     Speaker = require('speaker'),
-    request = require('request'),
     path = require('path'),
-    utils = require('./libs/utils');
+    http = require('http'),
+    https = require('https'),
+    utils = require('./libs/utils'),
+    PoolStream = require('pool_stream');
 
 var Player = function(songs, params) {
     if (!songs) return false;
@@ -102,22 +104,45 @@ Player.prototype.stop = function() {
 
 Player.prototype.download = function(src, callback) {
     var self = this;
-    var readable = request.get(src, {
-        encoding: null
-    }, function(err, res, buff) {
-        if (err) return callback(err);
+    var request = src.indexOf('https') !== -1 ? https : http;
+    var called = false;
+    request.get(src, function (res) {
+        called = true;
+        // 检查状态码
+        if (res.statusCode !== 200) {
+          return callback(new Error('resource invalid'));
+        }
+        // 检查类型
+        if (res.headers['content-type'].indexOf('audio/mpeg') === -1) {
+          return callback(new Error('resource type is unsupported'));
+        }
+        // 创建pool
+        var pool = new PoolStream();
+        // 先放进内存
+        res.pipe(pool);
+
         var filename = utils.fetchName(src);
-        fs.writeFile(path.join(self.downloads, filename), buff, function () {});
+        var writable = fs.createWriteStream(path.join(self.downloads, filename));
+        pool.pipe(writable);
+        // 返回网络流
+        callback(null, pool);
+    }).on('error', function (err) {
+        if (!called) {
+          callback(err);
+        }
     });
-    callback(null, readable);
 }
 
 Player.prototype.read = function(src, callback) {
     var self = this;
-    if (!(src.indexOf('http') == 0 || src.indexOf('https') == 0)) return callback(null, fs.createReadStream(src));
+    if (!(src.indexOf('http') == 0 || src.indexOf('https') == 0)) {
+        return callback(null, fs.createReadStream(src));
+    }
     var filename = utils.fetchName(src);
     fs.exists(path.join(self.downloads, filename), function(exists) {
-        if (exists) return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
+        if (false && exists) {
+            return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
+        }
         self.changeStatus('downloading', src);
         self.download(src, function(err, readable) {
             if (err) return callback(err);

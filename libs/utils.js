@@ -5,7 +5,13 @@ exports.getUserHome = function() {
 
 // fetch  filename
 exports.fetchName = function(str) {
-    return str.substr(str.lastIndexOf('/') + 1);
+    var filename = str.substr(str.lastIndexOf('/') + 1);
+    // 过滤 http://domain.com/xxx.mp3?xcode=fasda
+    if (filename.indexOf('?') !== -1) {
+        var parts = filename.split('?');
+        filename = parts[0];
+    }
+    return filename;
 };
 
 // format songs 
