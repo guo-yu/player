@@ -24,6 +24,7 @@ var Player = function(songs, params) {
     this.status = 'ready';
     this.src = params && params.srckey ? params.srckey : 'src';
     this.downloads = params && params.downloads ? params.downloads : utils.getUserHome();
+    this.cache = params && params.cache ? params.cache : false;
 }
 
 // 播放
@@ -116,16 +117,24 @@ Player.prototype.download = function(src, callback) {
         if (res.headers['content-type'].indexOf('audio/mpeg') === -1) {
           return callback(new Error('resource type is unsupported'));
         }
-        // 创建pool
-        var pool = new PoolStream();
-        // 先放进内存
-        res.pipe(pool);
 
-        var filename = utils.fetchName(src);
-        var writable = fs.createWriteStream(path.join(self.downloads, filename));
-        pool.pipe(writable);
-        // 返回网络流
-        callback(null, pool);
+        if (self.cache) {
+            self.changeStatus('downloading', src);
+
+            // 创建pool
+            var pool = new PoolStream();
+            // 先放进内存
+            res.pipe(pool);
+
+            var filename = utils.fetchName(src);
+            var writable = fs.createWriteStream(path.join(self.downloads, filename));
+            pool.pipe(writable);
+            // 返回网络流
+            callback(null, pool);
+        } else {
+            callback(null, res);
+        }
+
     }).on('error', function (err) {
         if (!called) {
           callback(err);
@@ -143,7 +152,6 @@ Player.prototype.read = function(src, callback) {
         if (exists) {
             return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
         }
-        self.changeStatus('downloading', src);
         self.download(src, function(err, readable) {
             if (err) return callback(err);
             callback(null, readable);
