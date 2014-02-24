@@ -48,10 +48,15 @@ Player.prototype.play = function(done, selected) {
                     });
                     self.changeStatus('playing', song);
                     this.pipe(speaker).on('close', function() {
-                        self.changeStatus('playend', song);
-                        cb(null); // switch to next one
+                        // can't trigger playend event here cause
+                        // unpipe will fire this speaker's close event
+                        self.changeStatus('stopped', song);
                     });
-                });
+                })
+                .on('finish', function(){
+                    self.changeStatus('playend', song);
+                    cb(null); // switch to next one
+                })
         });
     };
     if (self.list.length <= 0) return false;

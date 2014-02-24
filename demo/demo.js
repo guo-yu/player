@@ -15,15 +15,15 @@ player.on('downloading',function(item){
 });
 
 player.on('playing',function(item){
-    console.log('im playing... id:' + item);
+    console.log('im playing... ');
+    console.log(item);
     setTimeout(function(){
-        // console.log('it is gona stop !!!');
-        player.next();
-    },3000);
+        player.stop()
+    },2000)
 });
 
 player.on('playend',function(item){
-    console.log('id:' + item + ' play done, switching to next one ...');
+    console.log('play done, switching to next one ...');
     player.add('http://zhangmenshiting.baidu.com/data2/music/10470876/7343701219600128.mp3?xcode=351634fd3718fed5abb2f9389b9d4097b9319fcd4157c2b2')
 });
 
