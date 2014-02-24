@@ -7,24 +7,29 @@
  **/
 
 var fs = require('fs'),
-    lame = require('lame'),
-    async = require('async'),
-    Speaker = require('speaker'),
     path = require('path'),
     http = require('http'),
     https = require('https'),
-    utils = require('./libs/utils'),
-    PoolStream = require('pool_stream');
+    lame = require('lame'),
+    async = require('async'),
+    _ = require('underscore'),
+    Speaker = require('speaker'),
+    PoolStream = require('pool_stream'),
+    utils = require('./libs/utils');
+
+var defaults = {
+    src: 'src',
+    downloads: utils.getUserHome(),
+    cache: false
+}
 
 var Player = function(songs, params) {
     if (!songs) return false;
     this.streams = [];
     this.speakers = [];
-    this.list = (typeof(songs) === 'string') ? [{src: songs, _id: 0}] : utils.format(songs);
+    this.list = utils.format(songs);
     this.status = 'ready';
-    this.src = params && params.srckey ? params.srckey : 'src';
-    this.downloads = params && params.downloads ? params.downloads : utils.getUserHome();
-    this.cache = params && params.cache ? params.cache : false;
+    this.options = _.extend(defaults, params);
 }
 
 // 播放
@@ -33,7 +38,8 @@ Player.prototype.play = function(done, selected) {
         songs = selected ? selected : self.list;
     if (!this.done && typeof(done) === 'function') self._done = done;
     var play = function(song, cb) {
-        self.read((typeof(song) === 'string') ? song : song[self.src], function(err, p) {
+        var url = (typeof(song) === 'string') ? song : song[self.options.src];
+        self.read(url, function(err, p) {
             if (err) return cb(err);
             var l = new lame.Decoder();
             self.streams.push(l);
@@ -91,13 +97,13 @@ Player.prototype.on = function(event, callback) {
 Player.prototype.changeStatus = function(status, dist) {
     this.status = status;
     this[status] = dist;
-    if (this.event && this.event[status] && typeof(this.event[status]) == 'function') {
-        this.event[status](this[status]);
-    }
+    var isEvent = this.event && this.event[status] && typeof(this.event[status]) == 'function';
+    if (isEvent) return this.event[status](this[status]);
+    return this.status;
 }
 
 Player.prototype.stop = function() {
-    if (!(this.streams && this.streams.length && this.streams.length > 0)) return false;
+    if (this.streams.length === 0) return false;
     this.speakers[this.speakers.length - 1].rs.unpipe();
     this.speakers[this.speakers.length - 1].speaker.end();
     return false;
@@ -107,51 +113,49 @@ Player.prototype.download = function(src, callback) {
     var self = this;
     var request = src.indexOf('https') !== -1 ? https : http;
     var called = false;
-    request.get(src, function (res) {
+    request.get(src, function(res) {
         called = true;
+
+        var isOk = (res.statusCode === 200);
+        var isAudio = (res.headers['content-type'].indexOf('audio/mpeg') > -1);
+        var isSave = self.options.cache;
+
         // 检查状态码
-        if (res.statusCode !== 200) {
-          return callback(new Error('resource invalid'));
-        }
+        if (!isOk) return callback(new Error('resource invalid'));
         // 检查类型
-        if (res.headers['content-type'].indexOf('audio/mpeg') === -1) {
-          return callback(new Error('resource type is unsupported'));
-        }
+        if (!isAudio) return callback(new Error('resource type is unsupported'));
+        // 检查是否需要保存
+        if (!isSave) return callback(null, res);
 
-        if (self.cache) {
-            self.changeStatus('downloading', src);
+        self.changeStatus('downloading', src);
 
-            // 创建pool
-            var pool = new PoolStream();
-            // 先放进内存
-            res.pipe(pool);
+        // 创建pool
+        var pool = new PoolStream();
 
-            var filename = utils.fetchName(src);
-            var writable = fs.createWriteStream(path.join(self.downloads, filename));
-            pool.pipe(writable);
-            // 返回网络流
-            callback(null, pool);
-        } else {
-            callback(null, res);
-        }
+        // 先放进内存
+        res.pipe(pool);
 
-    }).on('error', function (err) {
-        if (!called) {
-          callback(err);
-        }
+        var filename = utils.fetchName(src);
+        var writable = fs.createWriteStream(path.join(self.options.downloads, filename));
+        pool.pipe(writable);
+
+        // 返回网络流
+        callback(null, pool);
+
+    }).on('error', function(err) {
+        if (!called) callback(err);
     });
 }
 
 Player.prototype.read = function(src, callback) {
     var self = this;
-    if (!(src.indexOf('http') == 0 || src.indexOf('https') == 0)) {
-        return callback(null, fs.createReadStream(src));
-    }
-    var filename = utils.fetchName(src);
-    fs.exists(path.join(self.downloads, filename), function(exists) {
-        if (exists) {
-            return callback(null, fs.createReadStream(path.join(self.downloads, filename)));
-        }
+    var isLocal = !(src.indexOf('http') == 0 || src.indexOf('https') == 0);
+
+    if (isLocal) return callback(null, fs.createReadStream(src));
+
+    var file = path.join(self.options.downloads, utils.fetchName(src));
+    fs.exists(file, function(exists) {
+        if (exists) return callback(null, fs.createReadStream(file));
         self.download(src, function(err, readable) {
             if (err) return callback(err);
             callback(null, readable);

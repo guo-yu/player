@@ -17,6 +17,15 @@ exports.fetchName = function(str) {
 // format songs 
 exports.format = function(list) {
     var songs = [];
+    
+    if (typeof(list) === 'string') {
+        songs.push({
+            src: list,
+            _id: 0
+        });
+        return songs;
+    }
+
     list.forEach(function(item, index){
         if (typeof(item) === 'object') {
             item._id = index;
