@@ -34,7 +34,7 @@ var Player = function(songs, params) {
 // 播放
 Player.prototype.play = function(done, selected) {
     var self = this;
-    if (!this.done && typeof(done) === 'function') self._done = done;
+    if (!self._done && typeof(done) === 'function') self._done = done;
     var play = function(song, cb) {
         var url = (typeof(song) === 'string') ? song : song[self.options.src];
         self.read(url, function(err, pool) {
@@ -56,8 +56,8 @@ Player.prototype.play = function(done, selected) {
     };
     if (self.list.length <= 0) return false;
     async.eachSeries(selected || self.list, play, function(err) {
+        if (self._done) return self._done(err, self);
         if (err) throw err;
-        if (typeof(done) === 'function') done(err, self);
         return true;
     });
     return self;
@@ -70,7 +70,7 @@ Player.prototype.next = function() {
         next = list[playing._id + 1];
     if (!next) return false;
     this.stop();
-    this.play(this._done ? this._done : null, list.slice(next._id));
+    this.play(this._done || null, list.slice(next._id));
     return true;
 }
 
