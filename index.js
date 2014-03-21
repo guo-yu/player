@@ -81,7 +81,7 @@ Player.prototype.next = function() {
 
 Player.prototype.add = function(song) {
     if (!this.list) this.list = [];
-    this.list.push(song);
+    this.list.push({_id: this.list.length, src:song});
 }
 
 Player.prototype.on = function(event, callback) {
