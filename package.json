@@ -1,6 +1,6 @@
 {
   "name": "player",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "command line interface mp3 player based on Node.js",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,6 @@
     "async": "*",
     "speaker": "*",
     "underscore": "*",
-    "pool_stream": "*"
+    "pool_stream": "0.0.2"
   }
 }
