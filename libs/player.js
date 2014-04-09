@@ -27,6 +27,11 @@ var defaults = {
 
 module.exports = Player;
 
+function errHandler(err) {
+  if (err) throw err;
+  return false;
+}
+
 function Player(songs, params) {
   if (!songs) return false;
   this.list = utils.format(songs);
@@ -48,7 +53,7 @@ util.inherits(Player, events.EventEmitter);
 Player.prototype.play = function(done, selected) {
   var self = this;
 
-  if (done) this.on('done', _.isFunction(done) ? done : function(){});
+  if (done !== 'next') this.on('done', _.isFunction(done) ? done : errHandler);
   if (this.list.length <= 0) return false;
   
   async.eachSeries(selected || this.list, play, function(err) {
@@ -148,7 +153,7 @@ Player.prototype.next = function(callback) {
   }
 
   this.stop();
-  this.play(null, list.slice(next._id));
+  this.play('next', list.slice(next._id));
   return callback(null, next);
 }
 

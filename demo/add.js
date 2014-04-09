@@ -1,8 +1,7 @@
 var Player = require('../index');
 
 var player = new Player([
-  'http://node-player.qiniudn.com/demo.mp3',
-  'http://node-player.qiniudn.com/demo2.mp3'
+  __dirname + '/demo.mp3'
 ]);
 
 player.play(function(err) {
@@ -17,6 +16,18 @@ player.on('downloading', function(song) {
 player.on('playing', function(song) {
   console.log('im playing... ');
   console.log(song);
+  console.log('add new song');
+  if (song._id === 0) {
+    player.add('http://node-player.qiniudn.com/demo2.mp3');
+  }
+  console.log('and I\'ll switch to next song in 3s:');
+  setTimeout(function(){
+    console.log('switch now !');
+    player.next(function(err, song){
+      if (!err) return console.log('switched !!');
+      return console.log(err);
+    });
+  }, 3000);
 });
 
 player.on('playend', function(song) {
