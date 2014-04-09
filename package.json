@@ -1,7 +1,7 @@
 {
   "name": "player",
-  "version": "0.1.5",
-  "description": "command line interface mp3 player based on Node.js",
+  "version": "0.1.6",
+  "description": "a command line interface mp3 player based on Node.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,11 +11,12 @@
     "url": "https://github.com/turingou/player.git"
   },
   "keywords": [
+    "audio",
     "player",
     "cli",
     "mp3"
   ],
-  "author": "turing",
+  "author": "turing <o.u.turing@Gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/turingou/player/issues"
