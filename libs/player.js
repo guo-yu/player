@@ -88,6 +88,13 @@ Player.prototype.play = function(done, selected) {
 
 }
 
+/**
+*
+* download a mp3 via its URI
+* @src [String]: the src URI of mp3 file
+* @callback [Function]: callback with err and file stream
+*
+**/
 Player.prototype.download = function(src, callback) {  
   var self = this;
   var request = src.indexOf('https') !== -1 ? https : http;
@@ -124,6 +131,13 @@ Player.prototype.download = function(src, callback) {
   });
 }
 
+/**
+*
+* Read mp3 src and check if we're going to download it.
+* @src [String]: the src url of mp3 file, would be local path or URI(http or https)
+* @callback [Function]: callback with err and file stream
+*
+**/
 Player.prototype.read = function(src, callback) {
   var isLocal = !(src.indexOf('http') == 0 || src.indexOf('https') == 0);
   if (isLocal) return callback(null, fs.createReadStream(src));
@@ -134,6 +148,12 @@ Player.prototype.read = function(src, callback) {
   this.download(src, callback);
 }
 
+/**
+*
+* Stop playing and unpipe stream.
+* No params for now.
+*
+**/
 Player.prototype.stop = function() {
   if (!this.speaker) return false;
   this.speaker.readableStream.unpipe();
@@ -141,6 +161,13 @@ Player.prototype.stop = function() {
   return false;
 }
 
+/**
+*
+* Stop playing and switch to next song.
+* if there is no next song, callback with a `no next` Error object.
+* @callback[Function]: callback with err and next song.
+*
+**/
 Player.prototype.next = function(callback) {
   var list = this.list;
   var current = this.history[this.history.length - 1];
@@ -157,6 +184,13 @@ Player.prototype.next = function(callback) {
   return callback(null, next);
 }
 
+/**
+*
+* Add a new song to the playlist.
+* if song provided is a String, convert it to a Song Object.
+* @song[String|Object]: the src URI of new song or the object of new song.
+*
+**/
 Player.prototype.add = function(song) {
   if (!this.list) this.list = [];
   var latest = _.isObject(song) ? song : {};
@@ -165,6 +199,12 @@ Player.prototype.add = function(song) {
   this.list.push(latest);
 }
 
+/**
+*
+* Bind some useful events
+* @events.playing: on playing, keeping play history up to date.
+*
+**/
 Player.prototype.bindEvents = function() {
   var self = this;
   this.on('playing', function(song) {
