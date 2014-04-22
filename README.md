@@ -66,7 +66,9 @@ player.stop();
 $ git clone https://github.com/turingou/player.git
 $ cd player
 $ npm install .
-$ node ./demo/demo.js
+$ node ./examples/local.js
+$ node ./examples/online.js
+$ node ./examples/next.js
 ````
 
 ### API
