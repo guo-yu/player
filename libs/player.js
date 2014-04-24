@@ -97,7 +97,7 @@ Player.prototype.play = function(done, selected) {
 **/
 Player.prototype.download = function(src, callback) {  
   var self = this;
-  var request = src.indexOf('https') !== -1 ? https : http;
+  var request = src.indexOf('https') === 0 ? https : http;
   var called = false;
 
   request.get(src, function(res) {
@@ -181,7 +181,7 @@ Player.prototype.next = function(callback) {
 
   this.stop();
   this.play('next', list.slice(next._id));
-  return callback(null, next);
+  return isCallback ? callback(null, next) : true;
 }
 
 /**
