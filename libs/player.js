@@ -110,20 +110,20 @@ Player.prototype.download = function(src, callback) {
     if (!isOk) return callback(new Error('resource invalid'));
     if (!isAudio) return callback(new Error('resource type is unsupported'));
 
-    // 创建pool
+    // create pool
     var pool = new PoolStream();
-    // 先放进内存
+    // pipe into memory
     res.pipe(pool);
 
-    // 检查是否需要保存
+    // check if we're going to save stream
     if (!isSave) return callback(null, pool);
 
-    // 保存到本地
+    // save stream to download dir
     var file = path.join(self.options.downloads, utils.fetchName(src));
     self.emit('downloading', src);
     pool.pipe(fs.createWriteStream(file));
 
-    // 返回网络流
+    // callback the pool
     callback(null, pool);
 
   }).on('error', function(err) {

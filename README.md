@@ -1,4 +1,4 @@
-## ![logo](http://ww2.sinaimg.cn/large/61ff0de3gw1e6xuxefgj1j200u00ugld.jpg) player ![](https://badge.fury.io/js/player.png)
+## ![player](http://ww2.sinaimg.cn/large/61ff0de3gw1efsd43dkswj201j01j3yb.jpg) player ![](https://badge.fury.io/js/player.png)
 
 a cli wrapper of node-speaker, support play `.mp3`s both from url and local songs.
 
@@ -18,16 +18,16 @@ var player = new Player('./xxx.mp3');
 
 // play now and callback when playend
 player.play(function(err, player){
-    console.log('playend!')
+  console.log('playend!');
 });
 
 // create a player instance from playlist
 var player = Player([
-    __dirname + '/demo.mp3',
-    __dirname + '/demo2.mp3',
-    __dirname + '/demo.mp3',
-    // play .mp3 file from a URL
-    'http://mr4.douban.com/blablablabla/p1949332.mp3'
+  __dirname + '/demo.mp3',
+  __dirname + '/demo2.mp3',
+  __dirname + '/demo.mp3',
+  // play .mp3 file from a URL
+  'http://mr4.douban.com/blablablabla/p1949332.mp3'
 ]);
 
 // play again
@@ -41,19 +41,19 @@ player.add('http://someurl.com/anothersong.mp3');
 
 // event: on playing
 player.on('playing',function(item){
-    console.log('im playing... src:' + item);
+  console.log('im playing... src:' + item);
 });
 
 // event: on playend
 player.on('playend',function(item){
-    // return a playend item
-    console.log('src:' + item + ' play done, switching to next one ...');
+  // return a playend item
+  console.log('src:' + item + ' play done, switching to next one ...');
 });
 
 // event: on error
 player.on('error', function(err){
-    // when error occurs
-    console.log(err);
+  // when error occurs
+  console.log(err);
 });
 
 // stop playing
