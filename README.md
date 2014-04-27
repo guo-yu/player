@@ -1,4 +1,4 @@
-## ![player](http://ww2.sinaimg.cn/large/61ff0de3gw1efsd43dkswj201j01j3yb.jpg) player ![](https://badge.fury.io/js/player.png)
+## ![player](http://ww3.sinaimg.cn/large/61ff0de3gw1efsd8equ3dj200z00z3ya.jpg) player ![](https://badge.fury.io/js/player.png)
 
 a cli wrapper of node-speaker, support play `.mp3`s both from url and local songs.
 
