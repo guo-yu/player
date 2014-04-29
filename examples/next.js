@@ -2,7 +2,11 @@ var Player = require('../index');
 
 var player = new Player([
   __dirname + '/demo.mp3',
-  __dirname + '/demo2.mp3'
+  __dirname + '/demo2.mp3',
+  __dirname + '/demo.mp3',
+  __dirname + '/demo2.mp3',
+  __dirname + '/demo.mp3',
+  __dirname + '/demo2.mp3',
 ]);
 
 player.play(function(err) {
