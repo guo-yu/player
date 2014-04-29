@@ -11,21 +11,22 @@
     "url": "https://github.com/turingou/player.git"
   },
   "keywords": [
+    "mp3",
+    "cli",
     "audio",
     "player",
-    "cli",
-    "mp3"
+    "cli player"
   ],
-  "author": "turing <o.u.turing@Gmail.com>",
+  "author": "turing <o.u.turing@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/turingou/player/issues"
   },
   "dependencies": {
-    "lame": "*",
-    "async": "*",
-    "speaker": "*",
-    "underscore": "*",
+    "lame": "1.1.0",
+    "async": "~0.7.0",
+    "speaker": "0.0.10",
+    "underscore": "~1.6.0",
     "pool_stream": "0.0.2"
   }
 }
