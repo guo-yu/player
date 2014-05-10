@@ -181,7 +181,7 @@ Player.prototype.next = function(callback) {
 
   this.stop();
   this.play('next', list.slice(next._id));
-  return isCallback ? callback(null, next) : true;
+  return isCallback ? callback(null, next, current) : true;
 }
 
 /**
@@ -208,6 +208,7 @@ Player.prototype.add = function(song) {
 Player.prototype.bindEvents = function() {
   var self = this;
   this.on('playing', function(song) {
+    self.playing = song;
     self.history.push(song);
   });
 }
