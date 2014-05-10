@@ -1,4 +1,4 @@
-## ![player](http://ww3.sinaimg.cn/large/61ff0de3gw1efsd8equ3dj200z00z3ya.jpg) player ![](https://badge.fury.io/js/player.png)
+## ![player](http://ww2.sinaimg.cn/large/61ff0de3gw1eg98y1go77j201q00zwe9.jpg) player ![](https://badge.fury.io/js/player.png)
 
 a command line player, supports play mp3 both from url and local stream.
 
