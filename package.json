@@ -1,11 +1,12 @@
 {
   "name": "player",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "a command line player, supports play mp3 both from url and local stream.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": "./bin/cli",
   "repository": {
     "type": "git",
     "url": "https://github.com/turingou/player.git"

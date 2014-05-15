@@ -8,6 +8,13 @@ a command line player, supports play mp3 both from url and local stream.
 $ npm install player
 ````
 
+### Player cli tool
+
+```
+$ [sudo] npm install player -g
+$ player play demo.mp3 [anotherdemo.mp3 ... ]
+```
+
 ### Example
 
 ````javascript
