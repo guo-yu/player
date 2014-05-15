@@ -17,7 +17,8 @@ module.exports = function() {
 
 function format(songs) {
   var dir = process.cwd();
-  return songs.map(function(song){
+  return songs.map(function(song) {
+    if (song.indexOf('http') === 0 || song.indexOf('https') === 0) return song;
     return path.join(dir, song);
   });
 }
