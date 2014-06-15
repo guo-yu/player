@@ -46,6 +46,9 @@ player.next();
 // add another song to playlist
 player.add('http://someurl.com/anothersong.mp3');
 
+// list songs in playlist
+player.playlist();
+
 // event: on playing
 player.on('playing',function(item){
   console.log('im playing... src:' + item);

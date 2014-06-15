@@ -55,7 +55,7 @@ Player.prototype.play = function(done, selected) {
 
   if (done !== 'next') this.on('done', _.isFunction(done) ? done : errHandler);
   if (this.list.length <= 0) return false;
-  
+
   async.eachSeries(selected || this.list, play, function(err) {
     self.emit('done', err);
   });
@@ -79,6 +79,9 @@ Player.prototype.play = function(done, selected) {
         });
       })
       .on('finish', function() {
+	self.list = self.list.filter(function(i) {
+	  return i["_id"] != song._id
+        });
         self.emit('playend', song);
         // switch to next one
         callback(null);
@@ -95,7 +98,7 @@ Player.prototype.play = function(done, selected) {
 * @callback [Function]: callback with err and file stream
 *
 **/
-Player.prototype.download = function(src, callback) {  
+Player.prototype.download = function(src, callback) {
   var self = this;
   var request = src.indexOf('https') === 0 ? https : http;
   var called = false;
@@ -211,4 +214,19 @@ Player.prototype.bindEvents = function() {
     self.playing = song;
     self.history.push(song);
   });
+}
+
+/**
+*
+* Lists songs in the playlist.
+* Displays the src for each song returned in json
+*
+**/
+Player.prototype.playList = function(song) {
+  if (!this.list) {
+    return;
+  }
+  return JSON.stringify(this.list.map(function(el) {
+    return el["src"];
+  }));
 }
