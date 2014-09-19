@@ -22,7 +22,8 @@ var utils = require('./utils');
 var defaults = {
   src: 'src',
   cache: false,
-  downloads: utils.getUserHome()
+  downloads: utils.getUserHome(),
+  proxy: process.env.HTTP_PROXY || process.env.http_proxy || null
 };
 
 module.exports = Player;
@@ -100,10 +101,25 @@ Player.prototype.play = function(done, selected) {
 **/
 Player.prototype.download = function(src, callback) {
   var self = this;
-  var request = src.indexOf('https') === 0 ? https : http;
   var called = false;
+  var proxyReg = /http:\/\/((?:\d{1,3}\.){3}\d{1,3}):(\d+)/;
 
-  request.get(src, function(res) {
+  if (self.options.http_proxy) {
+      var proxyGroup = self.options.http_proxy.match(proxyReg);
+      http.get({
+          host: proxyGroup[1],
+          port: proxyGroup[2],
+          path: src
+      }, responseHandler ).on('error', function(err){
+          if (!called) callback(err);
+      });
+  } else {
+      (src.indexOf('https') ? https : http).get(src, responseHandler).on('error', function(err) {
+        if (!called) callback(err);
+      });
+  }
+
+  function responseHandler(res){
     called = true;
 
     var isOk = (res.statusCode === 200);
@@ -128,10 +144,9 @@ Player.prototype.download = function(src, callback) {
 
     // callback the pool
     callback(null, pool);
+  }
 
-  }).on('error', function(err) {
-    if (!called) callback(err);
-  });
+
 }
 
 /**
