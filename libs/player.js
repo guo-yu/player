@@ -23,7 +23,7 @@ var defaults = {
   src: 'src',
   cache: false,
   downloads: utils.getUserHome(),
-  proxy: process.env.HTTP_PROXY || process.env.http_proxy || null
+  http_proxy: process.env.HTTP_PROXY || process.env.http_proxy || null
 };
 
 module.exports = Player;
@@ -103,20 +103,21 @@ Player.prototype.download = function(src, callback) {
   var self = this;
   var called = false;
   var proxyReg = /http:\/\/((?:\d{1,3}\.){3}\d{1,3}):(\d+)/;
+  var http_proxy = self.options.http_proxy;
 
-  if (self.options.http_proxy) {
-      var proxyGroup = self.options.http_proxy.match(proxyReg);
-      http.get({
-          host: proxyGroup[1],
-          port: proxyGroup[2],
-          path: src
-      }, responseHandler ).on('error', function(err){
-          if (!called) callback(err);
-      });
+  if (http_proxy && proxyReg.test(http_proxy)) {
+    var proxyGroup = http_proxy.match(proxyReg);
+    http.get({
+      host: proxyGroup[1],
+      port: proxyGroup[2],
+      path: src
+    }, responseHandler ).on('error', function(err){
+      if (!called) callback(err);
+    });
   } else {
-      (src.indexOf('https') ? https : http).get(src, responseHandler).on('error', function(err) {
-        if (!called) callback(err);
-      });
+    (src.indexOf('https') ? https : http).get(src, responseHandler).on('error', function(err) {
+      if (!called) callback(err);
+    });
   }
 
   function responseHandler(res){
