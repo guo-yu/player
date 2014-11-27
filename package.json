@@ -1,12 +1,9 @@
 {
   "name": "player",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "a command line player, supports play mp3 both from url and local stream.",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "bin": "./bin/cli",
+  "bin": "bin/cli",
   "repository": {
     "type": "git",
     "url": "https://github.com/turingou/player.git"
@@ -24,10 +21,11 @@
     "url": "https://github.com/turingou/player/issues"
   },
   "dependencies": {
-    "lame": "1.1.0",
     "async": "~0.7.0",
+    "home": "^0.1.3",
+    "lame": "1.1.0",
+    "pool_stream": "0.0.2",
     "speaker": "0.0.10",
-    "underscore": "~1.6.0",
-    "pool_stream": "0.0.2"
+    "underscore": "~1.6.0"
   }
 }

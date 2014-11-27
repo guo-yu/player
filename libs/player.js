@@ -11,9 +11,10 @@ var path = require('path');
 var util = require("util");
 var http = require('http');
 var https = require('https');
-var events = require("events");
+var home = require('home');
 var lame = require('lame');
 var async = require('async');
+var events = require("events");
 var _ = require('underscore');
 var Speaker = require('speaker');
 var PoolStream = require('pool_stream');
@@ -22,7 +23,7 @@ var utils = require('./utils');
 var defaults = {
   src: 'src',
   cache: false,
-  downloads: utils.getUserHome(),
+  downloads: home(),
   http_proxy: process.env.HTTP_PROXY || process.env.http_proxy || null
 };
 
@@ -34,11 +35,14 @@ function errHandler(err) {
 }
 
 function Player(songs, params) {
-  if (!songs) return false;
+  if (!songs) 
+    return false;
+
   this.list = utils.format(songs);
   this.history = [];
   this.options = _.extend(defaults, params);
   this.bindEvents();
+
   events.EventEmitter.call(this);
 };
 
@@ -54,19 +58,33 @@ util.inherits(Player, events.EventEmitter);
 Player.prototype.play = function(done, selected) {
   var self = this;
 
-  if (done !== 'next') this.on('done', _.isFunction(done) ? done : errHandler);
-  if (this.list.length <= 0) return false;
+  if (done !== 'next') 
+    this.on('done', _.isFunction(done) ? done : errHandler);
+
+  if (this.list.length <= 0) 
+    return false;
 
   async.eachSeries(selected || this.list, play, function(err) {
     self.emit('done', err);
   });
 
   function play(song, callback) {
-    var url = _.isString(song) ? song : song[self.options.src];
-    self.read(url, function(err, pool) {
-      if (err) return callback(err);
-      pool.pipe(new lame.Decoder())
-      .on('format', function(f) {
+    var url = _.isString(song) ? 
+        song : 
+        song[self.options.src];
+
+    self.read(url, onPlay);
+
+    function onPlay(err, pool) {
+      if (err) 
+        return callback(err);
+
+      pool
+        .pipe(new lame.Decoder())
+        .on('format', onPlaying)
+        .on('finish', onFinished);
+
+      function onPlaying(f) {
         var speaker = new Speaker(f);
         self.speaker = {};
         self.speaker.readableStream = this;
@@ -78,16 +96,17 @@ Player.prototype.play = function(done, selected) {
         this.pipe(speaker).on('close', function() {
           self.emit('stopped', song);
         });
-      })
-      .on('finish', function() {
-	self.list = self.list.filter(function(i) {
-	  return i["_id"] != song._id
+      }
+
+      function onFinished() {
+        self.list = self.list.filter(function(i) {
+          return i["_id"] != song._id
         });
         self.emit('playend', song);
         // switch to next one
         callback(null);
-      })
-    });
+      }
+    }
   }
 
 }
@@ -127,27 +146,32 @@ Player.prototype.download = function(src, callback) {
     var isAudio = (res.headers['content-type'].indexOf('audio/mpeg') > -1);
     var isSave = self.options.cache;
 
-    if (!isOk) return callback(new Error('resource invalid'));
-    if (!isAudio) return callback(new Error('resource type is unsupported'));
+    if (!isOk) 
+      return callback(new Error('Resource invalid'));
+    if (!isAudio) 
+      return callback(new Error('Resource type is unsupported'));
 
-    // create pool
+    // Create pool
     var pool = new PoolStream();
-    // pipe into memory
+    // Pipe into memory
     res.pipe(pool);
 
-    // check if we're going to save stream
-    if (!isSave) return callback(null, pool);
+    // Check if we're going to save stream
+    if (!isSave) 
+      return callback(null, pool);
 
-    // save stream to download dir
-    var file = path.join(self.options.downloads, utils.fetchName(src));
+    // Save stream to download dir
+    var file = path.join(
+      self.options.downloads, 
+      utils.fetchName(src)
+    );
+
     self.emit('downloading', src);
     pool.pipe(fs.createWriteStream(file));
 
-    // callback the pool
+    // Callback the pool
     callback(null, pool);
   }
-
-
 }
 
 /**
@@ -159,10 +183,18 @@ Player.prototype.download = function(src, callback) {
 **/
 Player.prototype.read = function(src, callback) {
   var isLocal = !(src.indexOf('http') == 0 || src.indexOf('https') == 0);
-  if (isLocal) return callback(null, fs.createReadStream(src));
 
-  var file = path.join(this.options.downloads, utils.fetchName(src));
-  if (fs.existsSync(file)) return callback(null, fs.createReadStream(file));
+  // Read local file stream if not a valid URI
+  if (isLocal) 
+    return callback(null, fs.createReadStream(src));
+
+  var file = path.join(
+    this.options.downloads, 
+    utils.fetchName(src)
+  );
+
+  if (fs.existsSync(file)) 
+    return callback(null, fs.createReadStream(file));
 
   this.download(src, callback);
 }
@@ -174,9 +206,17 @@ Player.prototype.read = function(src, callback) {
 *
 **/
 Player.prototype.stop = function() {
-  if (!this.speaker) return false;
-  this.speaker.readableStream.unpipe();
-  this.speaker.Speaker.end();
+  if (!this.speaker) 
+    return false;
+
+  this.speaker
+    .readableStream
+    .unpipe();
+
+  this.speaker
+    .Speaker
+    .end();
+
   return false;
 }
 
@@ -194,12 +234,15 @@ Player.prototype.next = function(callback) {
   var isCallback = callback && _.isFunction(callback);
 
   if (!next) {
-    if (isCallback) return callback(new Error('no next'));
+    if (isCallback) 
+      return callback(new Error('no next'));
+
     return false;
   }
 
   this.stop();
   this.play('next', list.slice(next._id));
+
   return isCallback ? callback(null, next, current) : true;
 }
 
@@ -211,10 +254,17 @@ Player.prototype.next = function(callback) {
 *
 **/
 Player.prototype.add = function(song) {
-  if (!this.list) this.list = [];
-  var latest = _.isObject(song) ? song : {};
+  if (!this.list) 
+    this.list = [];
+
+  var latest = _.isObject(song) ? 
+      song : {};
+
   latest._id = this.list.length;
-  if (_.isString(song)) latest.src = song;
+
+  if (_.isString(song)) 
+    latest.src = song;
+
   this.list.push(latest);
 }
 
@@ -239,9 +289,9 @@ Player.prototype.bindEvents = function() {
 *
 **/
 Player.prototype.playList = function(song) {
-  if (!this.list) {
+  if (!this.list)
     return;
-  }
+  
   return JSON.stringify(this.list.map(function(el) {
     return el["src"];
   }));

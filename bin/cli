@@ -1,3 +1,32 @@
 #!/usr/bin/env node
 
-require('../libs/cli')();
+var path = require('path');
+var Player = require('../index');
+
+var command = process.argv[2];
+
+if (!command) 
+  return false;
+
+var songs = process.argv.splice(3);
+
+if (!songs || songs.length === 0) 
+  return false;
+
+var player = new Player(format(songs));
+
+try {
+  player[command]();
+} catch (err) {
+  console.log(err);
+}
+
+function format(songs) {
+  var dir = process.cwd();
+  return songs.map(function(song) {
+    if (song.indexOf('http') === 0 || song.indexOf('https') === 0) 
+      return song;
+    
+    return path.join(dir, song);
+  });
+}

@@ -1,12 +1,10 @@
-// fetch user's home
-exports.getUserHome = function() {
-  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-}
+exports.format = format;
+exports.fetchName = fetchName;
 
-// fetch filename
-exports.fetchName = function(str) {
+// Fetch filename
+function fetchName(str) {
   var filename = str.substr(str.lastIndexOf('/') + 1);
-  // 过滤 http://domain.com/xxx.mp3?xcode=fasda
+  // Escape URI like this: `http://domain.com/xxx.mp3?xcode=fasda`
   if (filename.indexOf('?') !== -1) {
     var parts = filename.split('?');
     filename = parts[0];
@@ -14,8 +12,8 @@ exports.fetchName = function(str) {
   return filename;
 }
 
-// format songs 
-exports.format = function(list) {
+// Format songs 
+function format(list) {
   var songs = [];
 
   if (typeof(list) === 'string') {
@@ -39,4 +37,4 @@ exports.format = function(list) {
   });
   
   return songs;
-};
+}
