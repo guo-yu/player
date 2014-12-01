@@ -1,11 +1,3 @@
-/**
-*
-* Command line interface mp3 player based on Node.js
-* @author: [turingou](http://guoyu.me)
-* @created: [2013/07/20]
-*
-**/
-
 var fs = require('fs');
 var path = require('path');
 var util = require("util");
@@ -34,8 +26,13 @@ function errHandler(err) {
   return false;
 }
 
+/**
+ * [Class Player]
+ * @param {Array|String} songs  [may be a list of songs or a single song URI string.]
+ * @param {Object}       params [optional options when init a instance]
+ */
 function Player(songs, params) {
-  if (!songs) 
+  if (!songs)
     return false;
 
   this.list = utils.format(songs);
@@ -48,20 +45,27 @@ function Player(songs, params) {
 
 util.inherits(Player, events.EventEmitter);
 
+Player.prototype.play = play;
+Player.prototype.read = read;
+Player.prototype.stop = stop;
+Player.prototype.next = next;
+Player.prototype.add = addSong;
+Player.prototype.download = download;
+Player.prototype.playList = playList;
+Player.prototype.bindEvents = bindEvents;
+
 /**
-*
-* Play a mp3 list
-* @done [Function]: the callback function when all mp3s play end.
-* @select [Object]: the selected mp3 object.
-*
-**/
-Player.prototype.play = function(done, selected) {
+ * [Play a mp3 list]
+ * @param  {Function} done     [the callback function when all mp3s play end]
+ * @param  {[type]}   selected [the selected mp3 object.]
+ */
+function play(done, selected) {
   var self = this;
 
-  if (done !== 'next') 
+  if (done !== 'next')
     this.on('done', _.isFunction(done) ? done : errHandler);
 
-  if (this.list.length <= 0) 
+  if (this.list.length <= 0)
     return false;
 
   async.eachSeries(selected || this.list, play, function(err) {
@@ -69,14 +73,14 @@ Player.prototype.play = function(done, selected) {
   });
 
   function play(song, callback) {
-    var url = _.isString(song) ? 
-        song : 
+    var url = _.isString(song) ?
+        song :
         song[self.options.src];
 
     self.read(url, onPlay);
 
     function onPlay(err, pool) {
-      if (err) 
+      if (err)
         return callback(err);
 
       pool
@@ -86,11 +90,13 @@ Player.prototype.play = function(done, selected) {
 
       function onPlaying(f) {
         var speaker = new Speaker(f);
+
         self.speaker = {};
         self.speaker.readableStream = this;
         self.speaker.Speaker = speaker;
         self.emit('playing', song);
-        // this is where the song acturaly played end,
+
+        // This is where the song acturaly played end,
         // can't trigger playend event here cause
         // unpipe will fire this speaker's close event.
         this.pipe(speaker).on('close', function() {
@@ -112,13 +118,11 @@ Player.prototype.play = function(done, selected) {
 }
 
 /**
-*
-* download a mp3 via its URI
-* @src [String]: the src URI of mp3 file
-* @callback [Function]: callback with err and file stream
-*
-**/
-Player.prototype.download = function(src, callback) {
+ * [Download a mp3 file from its URI]
+ * @param  {String}   src      [the src URI of mp3 file]
+ * @param  {Function} callback [callback with err and file stream]
+ */
+function download(src, callback) {
   var self = this;
   var called = false;
   var proxyReg = /http:\/\/((?:\d{1,3}\.){3}\d{1,3}):(\d+)/;
@@ -146,23 +150,23 @@ Player.prototype.download = function(src, callback) {
     var isAudio = (res.headers['content-type'].indexOf('audio/mpeg') > -1);
     var isSave = self.options.cache;
 
-    if (!isOk) 
+    if (!isOk)
       return callback(new Error('Resource invalid'));
-    if (!isAudio) 
+    if (!isAudio)
       return callback(new Error('Resource type is unsupported'));
 
-    // Create pool
+    // Create a pool
     var pool = new PoolStream();
     // Pipe into memory
     res.pipe(pool);
 
-    // Check if we're going to save stream
-    if (!isSave) 
+    // Check if we're going to save this stream
+    if (!isSave)
       return callback(null, pool);
 
-    // Save stream to download dir
+    // Save this stream as file in download directory
     var file = path.join(
-      self.options.downloads, 
+      self.options.downloads,
       utils.fetchName(src)
     );
 
@@ -175,38 +179,35 @@ Player.prototype.download = function(src, callback) {
 }
 
 /**
-*
-* Read mp3 src and check if we're going to download it.
-* @src [String]: the src url of mp3 file, would be local path or URI(http or https)
-* @callback [Function]: callback with err and file stream
-*
-**/
-Player.prototype.read = function(src, callback) {
+ * [Read mp3 src and check if we're going to download it.]
+ * @param  {String}   src    [mp3 file src, would be local path or URI (http/https)]
+ * @param  {Function} callback [callback with err and file stream]
+ */
+function read(src, callback) {
   var isLocal = !(src.indexOf('http') == 0 || src.indexOf('https') == 0);
 
   // Read local file stream if not a valid URI
-  if (isLocal) 
+  if (isLocal)
     return callback(null, fs.createReadStream(src));
 
   var file = path.join(
-    this.options.downloads, 
+    this.options.downloads,
     utils.fetchName(src)
   );
 
-  if (fs.existsSync(file)) 
+  if (fs.existsSync(file))
     return callback(null, fs.createReadStream(file));
 
   this.download(src, callback);
 }
 
 /**
-*
-* Stop playing and unpipe stream.
-* No params for now.
-*
-**/
-Player.prototype.stop = function() {
-  if (!this.speaker) 
+ * [Stop playing and unpipe stream.
+ * No params for now.]
+ * @return {Bool} [always `false`]
+ */
+function stop() {
+  if (!this.speaker)
     return false;
 
   this.speaker
@@ -221,21 +222,20 @@ Player.prototype.stop = function() {
 }
 
 /**
-*
-* Stop playing and switch to next song.
-* if there is no next song, callback with a `no next` Error object.
-* @callback[Function]: callback with err and next song.
-*
-**/
-Player.prototype.next = function(callback) {
+ * [Stop playing and switch to next song,
+ * if there is no next song, callback with a `No next` Error object.]
+ * @param  {Function} callback [callback with err and next song.]
+ * @return {Bool}
+ */
+function next(callback) {
   var list = this.list;
   var current = this.history[this.history.length - 1];
   var next = list[current._id + 1];
   var isCallback = callback && _.isFunction(callback);
 
   if (!next) {
-    if (isCallback) 
-      return callback(new Error('no next'));
+    if (isCallback)
+      return callback(new Error('No next'));
 
     return false;
   }
@@ -247,34 +247,30 @@ Player.prototype.next = function(callback) {
 }
 
 /**
-*
-* Add a new song to the playlist.
-* if song provided is a String, convert it to a Song Object.
-* @song[String|Object]: the src URI of new song or the object of new song.
-*
-**/
-Player.prototype.add = function(song) {
-  if (!this.list) 
+ * [Add a new song to the playlist,
+ * if song provided is a String, convert it to a Song Object.]
+ * @param {String|Object} song [the src URI of new song or the object of new song.]
+ */
+function addSong(song) {
+  if (!this.list)
     this.list = [];
 
-  var latest = _.isObject(song) ? 
+  var latest = _.isObject(song) ?
       song : {};
 
   latest._id = this.list.length;
 
-  if (_.isString(song)) 
+  if (_.isString(song))
     latest.src = song;
 
   this.list.push(latest);
 }
 
 /**
-*
-* Bind some useful events
-* @events.playing: on playing, keeping play history up to date.
-*
-**/
-Player.prototype.bindEvents = function() {
+ * [Bind some useful events,
+ * @events.playing: on playing, keeping play history up to date.]
+ */
+function bindEvents() {
   var self = this;
   this.on('playing', function(song) {
     self.playing = song;
@@ -283,15 +279,14 @@ Player.prototype.bindEvents = function() {
 }
 
 /**
-*
-* Lists songs in the playlist.
-* Displays the src for each song returned in json
-*
-**/
-Player.prototype.playList = function(song) {
+ * [Lists songs in the playlist,
+ * Displays the src for each song returned in json]
+ * @param {[type]} song [description]
+ */
+function playList() {
   if (!this.list)
     return;
-  
+
   return JSON.stringify(this.list.map(function(el) {
     return el["src"];
   }));
