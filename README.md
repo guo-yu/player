@@ -93,28 +93,6 @@ check this file: `index.js`
 - Make sure your features are fully tested
 - Open a pull request, and enjoy <3
 
-### Changelog
-
- * 0.1.0: ship to 0.1.0, stream unpipe bugs fixed
- * 0.1.0: Bugs fixed
- * 0.1.0: add mp3 downloader
- * 0.1.0: code rewriting
- * bugs fixed , ship to 0.0.9
- * update readme
- * update readme
- * ship to 0.0.8
- * ship to 0.0.7
- * 新增事件监听接口 ship to 0.0.6
- * ship to 0.0.5
- * add new url
- * fixed demo bugs
- * ship to 0.0.4 新增从url播放
- * add logo
- * add callback
- * 修改一个硬编码问题
- * ship to 0.0.3
- * ship to 0.0.2 & add demo
-
 ### MIT license
 Copyright (c) 2014 turing &lt;o.u.turing@gmail.com&gt;
 
