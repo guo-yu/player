@@ -5,5 +5,5 @@
 * @Created:  [2013/07/20]
 *
 **/
-*
+
 module.exports = require('./libs/player');

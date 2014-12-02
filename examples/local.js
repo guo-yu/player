@@ -1,4 +1,6 @@
 var Player = require('../index');
+var pkg = require('../package.json');
+var debug = require('debug')(pkg.name);
 
 var player = new Player([
   __dirname + '/demo.mp3',
@@ -6,19 +8,19 @@ var player = new Player([
 ]);
 
 player.play(function(err) {
-  console.log('all songs play end');
+  debug('All songs play end');
 });
 
 player.on('playing', function(song) {
-  console.log('im playing... ');
-  console.log(song);
+  debug('I\'m playing... ');
+  debug(song);
 });
 
 player.on('playend', function(song) {
-  console.log('play done, switching to next one ...');
+  debug('Play done, Switching to next one ...');
 });
 
 player.on('error', function(err) {
-  console.log('Opps...!')
-  console.log(err);
+  debug('Opps...!')
+  debug(err);
 });

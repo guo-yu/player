@@ -1,4 +1,6 @@
 var Player = require('../index');
+var pkg = require('../package.json');
+var debug = require('debug')(pkg.name);
 
 var player = new Player([
   __dirname + '/demo.mp3',
@@ -10,27 +12,29 @@ var player = new Player([
 ]);
 
 player.play(function(err) {
-  console.log('all songs play end');
+  debug('all songs play end');
 });
 
 player.on('playing', function(song) {
-  console.log('im playing... ');
-  console.log(song);
-  console.log('and I\'ll switch to next song in 3s:');
+  debug('im playing... ');
+  debug(song);
+  debug('and I\'ll switch to next song in 3s:');
+
   setTimeout(function(){
-    console.log('switch now !');
+    debug('switch now !');
+
     player.next(function(err, song){
-      if (!err) return console.log('switched !!');
-      return console.log(err);
+      if (!err) return debug('switched !!');
+      return debug(err);
     });
   }, 3000);
 });
 
 player.on('playend', function(song) {
-  console.log('play done, switching to next one ...');
+  debug('play done, switching to next one ...');
 });
 
 player.on('error', function(err) {
-  console.log('Opps...!')
-  console.log(err);
+  debug('Opps...!')
+  debug(err);
 });

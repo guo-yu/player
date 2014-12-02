@@ -4,6 +4,10 @@
   "description": "a command line player, supports play mp3 both from url and local stream.",
   "main": "index.js",
   "bin": "bin/cli",
+  "scripts": {
+    "example-add": "DEBUG=player,player:* node examples/add.js",
+    "example-local": "DEBUG=player,player:* node examples/local.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/turingou/player.git"
@@ -27,5 +31,8 @@
     "pool_stream": "0.0.2",
     "speaker": "0.0.10",
     "underscore": "~1.6.0"
+  },
+  "devDependencies": {
+    "debug": "^2.1.0"
   }
 }

@@ -1,4 +1,6 @@
 var Player = require('../index');
+var pkg = require('../package.json');
+var debug = require('debug')(pkg.name);
 
 var player = new Player([
   'http://node-player.qiniudn.com/demo.mp3',
@@ -6,24 +8,24 @@ var player = new Player([
 ]);
 
 player.play(function(err) {
-  console.log('all songs play end');
+  debug('all songs play end');
 });
 
 player.on('downloading', function(song) {
-  console.log('im downloading... ');
-  console.log(song);
+  debug('im downloading... ');
+  debug(song);
 });
 
 player.on('playing', function(song) {
-  console.log('im playing... ');
-  console.log(song);
+  debug('im playing... ');
+  debug(song);
 });
 
 player.on('playend', function(song) {
-  console.log('play done, switching to next one ...');
+  debug('play done, switching to next one ...');
 });
 
 player.on('error', function(err) {
-  console.log('Opps...!')
-  console.log(err);
+  debug('Opps...!')
+  debug(err);
 });

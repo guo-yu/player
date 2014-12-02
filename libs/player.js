@@ -127,21 +127,20 @@ function download(src, callback) {
   var called = false;
   var proxyReg = /http:\/\/((?:\d{1,3}\.){3}\d{1,3}):(\d+)/;
   var http_proxy = self.options.http_proxy;
+  var request = src.indexOf('https') === 0 ? https : http;
+  var query = src;
 
   if (http_proxy && proxyReg.test(http_proxy)) {
     var proxyGroup = http_proxy.match(proxyReg);
-    http.get({
-      host: proxyGroup[1],
-      port: proxyGroup[2],
-      path: src
-    }, responseHandler ).on('error', function(err){
-      if (!called) callback(err);
-    });
-  } else {
-    (src.indexOf('https') ? https : http).get(src, responseHandler).on('error', function(err) {
-      if (!called) callback(err);
-    });
+    query = {};
+    query.path = src;
+    query.host = proxyGroup[1];
+    query.port = proxyGroup[2];
   }
+
+  request
+    .get(query, responseHandler)
+    .on('error', errorHandler);
 
   function responseHandler(res){
     called = true;
@@ -175,6 +174,11 @@ function download(src, callback) {
 
     // Callback the pool
     callback(null, pool);
+  }
+
+  function errorHandler() {
+    if (!called)
+      callback(err);
   }
 }
 
