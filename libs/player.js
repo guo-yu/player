@@ -15,6 +15,7 @@ var utils = require('./utils');
 var defaults = {
   src: 'src',
   cache: false,
+  stream: false,
   downloads: home(),
   http_proxy: process.env.HTTP_PROXY || process.env.http_proxy || null
 };
@@ -148,9 +149,12 @@ function download(src, callback) {
     var isOk = (res.statusCode === 200);
     var isAudio = (res.headers['content-type'].indexOf('audio/mpeg') > -1);
     var isSave = self.options.cache;
+    var isStream = self.options.stream;
 
     if (!isOk)
       return callback(new Error('Resource invalid'));
+    if (isStream)
+      return callback(null, res);
     if (!isAudio)
       return callback(new Error('Resource type is unsupported'));
 
@@ -176,7 +180,7 @@ function download(src, callback) {
     callback(null, pool);
   }
 
-  function errorHandler() {
+  function errorHandler(err) {
     if (!called)
       callback(err);
   }
