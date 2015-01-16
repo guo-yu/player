@@ -1,6 +1,0 @@
-examples
-node_modules
-.DS_*
-npm-debug.*
-*.sublime*
-thumb
