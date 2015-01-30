@@ -22,11 +22,21 @@ try {
 }
 
 function format(songs) {
-  var dir = process.cwd();
-  return songs.map(function(song) {
-    if (song.indexOf('http') === 0 || song.indexOf('https') === 0) 
-      return song;
-    
-    return path.join(dir, song);
+  return songs.map(function(songPath) {
+    if (isAbs(songPath))
+      return songPath;
+
+    return path.join(process.cwd(), songPath);
   });
+}
+
+function isAbs(str) {
+  if (str.indexOf('http') === 0 || str.indexOf('https') === 0) 
+    return true;
+
+  var beginWith = str.charAt(0);
+  if (beginWith === '~' || beginWith == '/')
+    return true;
+
+  return false;
 }
