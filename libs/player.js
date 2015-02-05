@@ -64,7 +64,7 @@ function play(done, selected) {
   var self = this;
 
   if (done !== 'next')
-    this.on('done', _.isFunction(done) ? done : errHandler);
+    this.once('done', _.isFunction(done) ? done : errHandler);
 
   if (this.list.length <= 0)
     return false;
@@ -86,8 +86,8 @@ function play(done, selected) {
 
       pool
         .pipe(new lame.Decoder())
-        .on('format', onPlaying)
-        .on('finish', onFinished);
+        .once('format', onPlaying)
+        .once('finish', onFinished);
 
       function onPlaying(f) {
         var speaker = new Speaker(f);
@@ -100,7 +100,7 @@ function play(done, selected) {
         // This is where the song acturaly played end,
         // can't trigger playend event here cause
         // unpipe will fire this speaker's close event.
-        this.pipe(speaker).on('close', function() {
+        this.pipe(speaker).once('close', function() {
           self.emit('stopped', song);
         });
       }
@@ -141,7 +141,7 @@ function download(src, callback) {
 
   request
     .get(query, responseHandler)
-    .on('error', errorHandler);
+    .once('error', errorHandler);
 
   function responseHandler(res){
     called = true;
@@ -280,7 +280,7 @@ function addSong(song) {
  */
 function bindEvents() {
   var self = this;
-  this.on('playing', function(song) {
+  this.once('playing', function(song) {
     self.playing = song;
     self.history.push(song);
   });
