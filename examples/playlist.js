@@ -3,8 +3,8 @@ var pkg = require('../package.json');
 var debug = require('debug')(pkg.name);
 
 var player = new Player([
-  __dirname + 'demo.mp3',
-  __dirname + 'demo1.mp3'
+  __dirname + '/demo.mp3',
+  __dirname + '/demo2.mp3'
 ]);
 
 debug("Play List:" + player.playList());
