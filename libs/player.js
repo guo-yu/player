@@ -11,6 +11,7 @@ var _ = require('underscore');
 var Speaker = require('speaker');
 var PoolStream = require('pool_stream');
 var utils = require('./utils');
+var mm = require('musicmetadata');
 
 var defaults = {
   src: 'src',
@@ -51,6 +52,7 @@ Player.prototype.read = read;
 Player.prototype.stop = stop;
 Player.prototype.next = next;
 Player.prototype.add = addSong;
+Player.prototype.show = showInfo;
 Player.prototype.download = download;
 Player.prototype.playList = playList;
 Player.prototype.bindEvents = bindEvents;
@@ -75,8 +77,8 @@ function play(done, selected) {
 
   function play(song, callback) {
     var url = _.isString(song) ?
-        song :
-        song[self.options.src];
+      song :
+      song[self.options.src];
 
     self.read(url, onPlay);
 
@@ -96,6 +98,8 @@ function play(done, selected) {
         self.speaker.readableStream = this;
         self.speaker.Speaker = speaker;
         self.emit('playing', song);
+
+        self.show(song);
 
         // This is where the song acturaly played end,
         // can't trigger playend event here cause
@@ -143,7 +147,7 @@ function download(src, callback) {
     .get(query, responseHandler)
     .once('error', errorHandler);
 
-  function responseHandler(res){
+  function responseHandler(res) {
     called = true;
 
     var isOk = (res.statusCode === 200);
@@ -264,7 +268,7 @@ function addSong(song) {
     this.list = [];
 
   var latest = _.isObject(song) ?
-      song : {};
+    song : {};
 
   latest._id = this.list.length;
 
@@ -298,4 +302,39 @@ function playList() {
   return JSON.stringify(this.list.map(function(el) {
     return el["src"];
   }));
+}
+
+function showInfo(song) {
+  var name = song['src'].split('/').pop();
+  var total = 70;
+  var parser = mm(fs.createReadStream(name), {
+    duration: true
+  }, function(err, metadata) {
+    if (err) {
+      console.log('Now playing: ' + name + ' (No metadata found)');
+      return;
+    }
+    var info = metadata.title;
+    var duration = parseInt(metadata.duration);
+    var dots = total - 1;
+    var speed = (duration * 1000) / total;
+    async.doWhilst(
+      function(callback) {
+        // process.stdout.clearLine(); //doesn't work sometimes on mac
+        process.stdout.write('\033c'); //clear console
+        process.stdout.cursorTo(0); //move cursor to beginning of line
+        process.stdout.write(utils.getProgress(total - dots, total, info));
+        setTimeout(callback, speed);
+        dots--;
+      },
+      function() {
+        return dots > 0;
+      },
+      function(done) {
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+      }
+    );
+  });
 }

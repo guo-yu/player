@@ -1,5 +1,6 @@
 exports.format = format;
 exports.fetchName = fetchName;
+exports.getProgress = getProgress;
 
 // Fetch filename
 function fetchName(str) {
@@ -35,6 +36,20 @@ function format(list) {
       });
     }
   });
-  
+
   return songs;
+}
+
+function getProgress(p, t, info) {
+  var bar = '';
+  bar += ('Now playing: ' + info);
+  bar += '\n';
+  for (var i = 0; i < p; i++) {
+    bar += '>';
+  }
+  for (var i = p; i < t - 1; i++) {
+    bar += ' ';
+  }
+  bar += '|';
+  return bar;
 }
