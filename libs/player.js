@@ -317,11 +317,12 @@ export default class Player {
           // process.stdout.clearLine()
 
           // Clear console
-          process.stdout.write('\033c')
+          process.stdout.write('\0o33c')
 
           // Move cursor to beginning of line
           process.stdout.cursorTo(0)
           process.stdout.write(utils.getProgress(total - dots, total, info))
+
           setTimeout(callback, speed)
 
           dots--
