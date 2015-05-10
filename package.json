@@ -2,9 +2,11 @@
   "name": "player",
   "version": "0.3.2",
   "description": "a command line player, supports play mp3 both from url and local stream.",
-  "main": "index.js",
+  "main": "dist/player.js",
   "bin": "bin/cli",
   "scripts": {
+    "build": "node_modules/.bin/babel libs --out-dir dist --source-maps",
+    "build-watch": "node_modules/.bin/babel src --out-dir dist --source-maps --watch",
     "example-add": "DEBUG=player,player:* node examples/add.js",
     "example-local": "DEBUG=player,player:* node examples/local.js",
     "example-stream": "DEBUG=player,player:* node examples/stream.js 2>/dev/null"
@@ -28,7 +30,8 @@
   "files": [
     "bin",
     "index.js",
-    "libs"
+    "libs",
+    "dist"
   ],
   "dependencies": {
     "async": "^0.9.0",
@@ -40,6 +43,7 @@
     "musicmetadata": "1.0.1"
   },
   "devDependencies": {
+    "babel": "^5.1.11",
     "debug": "^2.1.0"
   }
 }
