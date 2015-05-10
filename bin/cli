@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path');
-var Player = require('../index');
+var Player = require('../dist/player');
 
 var command = process.argv[2];
 
