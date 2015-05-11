@@ -66,13 +66,7 @@ var _pool_stream = require('pool_stream');
 
 var _pool_stream2 = _interopRequireDefault(_pool_stream);
 
-var _musicmetadata = require('musicmetadata');
-
-var _musicmetadata2 = _interopRequireDefault(_musicmetadata);
-
 var _utils = require('./utils');
-
-var _utils2 = _interopRequireDefault(_utils);
 
 var defaults = {
   'src': 'src',
@@ -95,7 +89,7 @@ var Player = (function () {
 
     if (!songs) return;
 
-    this.list = _utils2['default'].format(songs);
+    this.list = _utils.format(songs);
     this.history = [];
     this.options = _underscore2['default'].extend(defaults, params);
 
@@ -147,7 +141,9 @@ var Player = (function () {
             self.speaker.Speaker = speaker;
             self.emit('playing', song);
 
-            self.show(song);
+            try {
+              self.show(song, require('musicmetadata'));
+            } catch (err) {}
 
             // This is where the song acturaly played end,
             // can't trigger playend event here cause
@@ -189,7 +185,7 @@ var Player = (function () {
       // Read local file stream if not a valid URI
       if (isLocal) return callback(null, _fs2['default'].createReadStream(src));
 
-      var file = _path2['default'].join(this.options.downloads, _utils2['default'].fetchName(src));
+      var file = _path2['default'].join(this.options.downloads, _utils.fetchName(src));
 
       if (_fs2['default'].existsSync(file)) return callback(null, _fs2['default'].createReadStream(file));
 
@@ -304,7 +300,7 @@ var Player = (function () {
         if (!isSave) return callback(null, pool);
 
         // Save this stream as file in download directory
-        var file = _path2['default'].join(self.options.downloads, _utils2['default'].fetchName(src));
+        var file = _path2['default'].join(self.options.downloads, _utils.fetchName(src));
 
         self.emit('downloading', src);
         pool.pipe(_fs2['default'].createWriteStream(file));
@@ -333,46 +329,52 @@ var Player = (function () {
     }
   }, {
     key: 'show',
-    value: function show(song) {
+    value: function show(song, mm) {
       var total = 70;
       var name = song['src'].split('/').pop();
       var options = {
         'duration': true
       };
 
-      var parser = _musicmetadata2['default'](_fs2['default'].createReadStream(name), options, function (err, metadata) {
-        if (err) {
-          console.log('Now playing: ' + name + ' (No metadata found)');
-          return;
-        }
+      try {
+        var showMeta = function (err, metadata) {
+          if (err) {
+            console.log('Now playing: ' + name + ' (No metadata found)');
+            return;
+          }
 
-        var info = metadata.title;
-        var duration = parseInt(metadata.duration);
-        var dots = total - 1;
-        var speed = duration * 1000 / total;
+          var info = metadata.title;
+          var duration = parseInt(metadata.duration);
+          var dots = total - 1;
+          var speed = duration * 1000 / total;
 
-        _async2['default'].doWhilst(function (callback) {
-          // Doesn't work sometimes on mac
-          // process.stdout.clearLine()
+          _async2['default'].doWhilst(function (callback) {
+            // Doesn't work sometimes on mac
+            // process.stdout.clearLine()
 
-          // Clear console
-          process.stdout.write('\u0000o33c');
+            // Clear console
+            process.stdout.write('\u0000o33c');
 
-          // Move cursor to beginning of line
-          process.stdout.cursorTo(0);
-          process.stdout.write(_utils2['default'].getProgress(total - dots, total, info));
+            // Move cursor to beginning of line
+            process.stdout.cursorTo(0);
+            process.stdout.write(_utils.getProgress(total - dots, total, info));
 
-          setTimeout(callback, speed);
+            setTimeout(callback, speed);
 
-          dots--;
-        }, function () {
-          return dots > 0;
-        }, function (done) {
-          process.stdout.moveCursor(0, -1);
-          process.stdout.clearLine();
-          process.stdout.cursorTo(0);
-        });
-      });
+            dots--;
+          }, function () {
+            return dots > 0;
+          }, function (done) {
+            process.stdout.moveCursor(0, -1);
+            process.stdout.clearLine();
+            process.stdout.cursorTo(0);
+          });
+        };
+
+        (mm || require('musicmetadata'))(_fs2['default'].createReadStream(name), options, showMeta);
+      } catch (err) {
+        console.log(err);
+      }
     }
   }]);
 

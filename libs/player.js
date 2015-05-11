@@ -18,7 +18,7 @@ import events from "events"
 import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
-import utils from './utils'
+import { fetchName, format, getProgress } from './utils'
 
 const defaults = {
   'src': 'src',
@@ -38,7 +38,7 @@ export default class Player {
     if (!songs)
       return
 
-    this.list = utils.format(songs)
+    this.list = format(songs)
     this.history = []
     this.options = _.extend(defaults, params)
 
@@ -97,9 +97,7 @@ export default class Player {
 
           try {
             self.show(song, require('musicmetadata'))
-          } catch (err) {
-            // Ignore the error.
-          }
+          } catch (err) {}
 
           // This is where the song acturaly played end,
           // can't trigger playend event here cause
@@ -141,7 +139,7 @@ export default class Player {
 
     var file = path.join(
       this.options.downloads,
-      utils.fetchName(src)
+      fetchName(src)
     )
 
     if (fs.existsSync(file))
@@ -266,7 +264,7 @@ export default class Player {
       // Save this stream as file in download directory
       var file = path.join(
         self.options.downloads,
-        utils.fetchName(src)
+        fetchName(src)
       )
 
       self.emit('downloading', src)
@@ -326,7 +324,7 @@ export default class Player {
 
             // Move cursor to beginning of line
             process.stdout.cursorTo(0)
-            process.stdout.write(utils.getProgress(total - dots, total, info))
+            process.stdout.write(getProgress(total - dots, total, info))
 
             setTimeout(callback, speed)
 
@@ -346,4 +344,4 @@ export default class Player {
   }
 }
 
-util.inherits(Player, events.EventEmitter);
+util.inherits(Player, events.EventEmitter)
