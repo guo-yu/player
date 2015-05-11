@@ -72,6 +72,8 @@ export default class Player extends EventEmitter {
       (err) => this.emit('done', err)
     )
 
+    return this
+
     function startPlay(song, callback) {
       var url = _.isString(song) ?
         song :
