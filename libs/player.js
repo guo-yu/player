@@ -303,50 +303,47 @@ export default class Player extends EventEmitter {
       'duration': true
     }
 
-    try {
-      (mm || require('musicmetadata'))(
-        fs.createReadStream(song.src),
-        options, 
-        showMeta
-      )
+    var stream = fs.createReadStream(song.src)
+    stream.on('error', (err) => {
+      console.log(new Error(`出错了 ${err.code}: ${err.path}`))
+    })
 
-      function showMeta(err, metadata) {
-        if (err) {
-          console.log(`Now playing: ${name} (No metadata found)`);
-          return
-        }
+    (mm || require('musicmetadata'))(stream, options, showMeta)
 
-        var info = metadata.title
-        var duration = parseInt(metadata.duration)
-        var dots = total - 1
-        var speed = (duration * 1000) / total
-
-        async.doWhilst(
-          (callback) => {
-            // Doesn't work sometimes on mac
-            // process.stdout.clearLine()
-
-            // Clear console
-            process.stdout.write('\0o33c')
-
-            // Move cursor to beginning of line
-            process.stdout.cursorTo(0)
-            process.stdout.write(getProgress(total - dots, total, info))
-
-            setTimeout(callback, speed)
-
-            dots--
-          },
-          () => dots > 0,
-          (done) => {
-            process.stdout.moveCursor(0, -1)
-            process.stdout.clearLine()
-            process.stdout.cursorTo(0)
-          }
-        )
+    function showMeta(err, metadata) {
+      if (err) {
+        console.log(`Now playing: ${name} (No metadata found)`);
+        return
       }
-    } catch (err) {
-      console.log(err)
+
+      var info = metadata.title
+      var duration = parseInt(metadata.duration)
+      var dots = total - 1
+      var speed = (duration * 1000) / total
+
+      async.doWhilst(
+        (callback) => {
+          // Doesn't work sometimes on mac
+          // process.stdout.clearLine()
+
+          // Clear console
+          process.stdout.write('\0o33c')
+
+          // Move cursor to beginning of line
+          process.stdout.cursorTo(0)
+          process.stdout.write(getProgress(total - dots, total, info))
+
+          setTimeout(callback, speed)
+
+          dots--
+        },
+        () => dots > 0,
+        (done) => {
+          process.stdout.moveCursor(0, -1)
+          process.stdout.clearLine()
+          process.stdout.cursorTo(0)
+        }
+      )
     }
   }
 }
