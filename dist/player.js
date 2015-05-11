@@ -130,6 +130,8 @@ var Player = (function (_EventEmitter) {
         return _this3.emit('done', err);
       });
 
+      return this;
+
       function startPlay(song, callback) {
         var url = _underscore2['default'].isString(song) ? song : song[self.options.src];
 
@@ -331,14 +333,14 @@ var Player = (function (_EventEmitter) {
       if (!this.list) return;
 
       return JSON.stringify(this.list.map(function (el) {
-        return el['src'];
+        return el.src;
       }));
     }
   }, {
     key: 'show',
     value: function show(song, mm) {
       var total = 70;
-      var name = song['src'].split('/').pop();
+      var name = song.src.split('/').pop();
       var options = {
         'duration': true
       };
@@ -378,7 +380,7 @@ var Player = (function (_EventEmitter) {
           });
         };
 
-        (mm || require('musicmetadata'))(_fs2['default'].createReadStream(name), options, showMeta);
+        (mm || require('musicmetadata'))(_fs2['default'].createReadStream(song.src), options, showMeta);
       } catch (err) {
         console.log(err);
       }
