@@ -6,7 +6,7 @@
   "bin": "bin/cli",
   "scripts": {
     "build": "node_modules/.bin/babel libs --out-dir dist --source-maps",
-    "build-watch": "node_modules/.bin/babel src --out-dir dist --source-maps --watch",
+    "build-watch": "node_modules/.bin/babel libs --out-dir dist --source-maps --watch",
     "example-add": "DEBUG=player,player:* node examples/add.js",
     "example-local": "DEBUG=player,player:* node examples/local.js",
     "example-stream": "DEBUG=player,player:* node examples/stream.js 2>/dev/null"
@@ -42,8 +42,8 @@
     "underscore": "~1.6.0"
   },
   "devDependencies": {
-    "babel": "^5.1.11",
-    "musicmetadata": "1.0.1",
-    "debug": "^2.1.0"
+    "babel": "^5.2.17",
+    "debug": "^2.1.0",
+    "musicmetadata": "1.0.1"
   }
 }
