@@ -292,19 +292,23 @@ export default class Player extends EventEmitter {
       return
 
     return JSON.stringify(
-      this.list.map((el) => el['src'])
+      this.list.map((el) => el.src)
     )
   }
 
   show(song, mm) {
     var total = 70
-    var name = song['src'].split('/').pop()
+    var name = song.src.split('/').pop()
     var options = {
       'duration': true
     }
-    
+
     try {
-      (mm || require('musicmetadata'))(fs.createReadStream(name), options, showMeta)
+      (mm || require('musicmetadata'))(
+        fs.createReadStream(song.src),
+        options, 
+        showMeta
+      )
 
       function showMeta(err, metadata) {
         if (err) {
