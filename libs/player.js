@@ -14,10 +14,10 @@ import https from 'https'
 import home from 'home'
 import lame from 'lame'
 import async from 'async'
-import events from "events"
 import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
+import { EventEmitter } from "events"
 import { fetchName, format, getProgress } from './utils'
 
 const defaults = {
@@ -33,10 +33,13 @@ const defaults = {
  * @param {Array|String} songs  [A list of songs or a single song URI string.]
  * @param {Object}       params [Optional options when init a instance]
  */
-export default class Player {
+export default class Player extends EventEmitter {
   constructor(songs, params) {
     if (!songs)
       return
+
+    // Inherits eventEmitter
+    super()
 
     this.list = format(songs)
     this.history = []
@@ -47,8 +50,6 @@ export default class Player {
       this.playing = song
       this.history.push(song)
     })
-
-    events.EventEmitter.call(this)
   }
   
   /**
@@ -343,5 +344,3 @@ export default class Player {
     }
   }
 }
-
-util.inherits(Player, events.EventEmitter)
