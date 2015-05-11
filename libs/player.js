@@ -55,9 +55,8 @@ export default class Player extends EventEmitter {
   /**
    * [Play a mp3 list]
    * @param  {Function} done     [the callback function when all mp3s play end]
-   * @param  {[type]}   selected [the selected mp3 object.]
    */
-  play(done, selected) {
+  play(done) {
     var self = this
 
     if (done !== 'next')
@@ -67,7 +66,7 @@ export default class Player extends EventEmitter {
       return
 
     async.eachSeries(
-      selected || this.list, 
+      this.list, 
       startPlay, 
       (err) => this.emit('done', err)
     )
@@ -75,15 +74,16 @@ export default class Player extends EventEmitter {
     return this
 
     function startPlay(song, callback) {
-      var url = _.isString(song) ?
-        song :
-        song[self.options.src]
-
-      self.read(url, onPlay)
+      self.read(song[self.options.src], onPlay)
 
       function onPlay(err, pool) {
         if (err)
           return callback(err)
+
+        self.meta(pool, (err, data) => {
+          if (!err) 
+            song.meta = data
+        })
 
         pool
           .pipe(new lame.Decoder())
@@ -97,10 +97,6 @@ export default class Player extends EventEmitter {
           self.speaker.readableStream = this
           self.speaker.Speaker = speaker
           self.emit('playing', song)
-
-          try {
-            self.show(song, require('musicmetadata'))
-          } catch (err) {}
 
           // This is where the song acturaly played end,
           // can't trigger playend event here cause
@@ -296,54 +292,56 @@ export default class Player extends EventEmitter {
     )
   }
 
-  show(song, mm) {
-    var total = 70
-    var name = song.src.split('/').pop()
+  // Fetch metadata from local or remote mp3 stream
+  meta(stream, callback) {
+    try {
+      var mm = require('musicmetadata')
+    } catch (err) {
+      return callback(err)
+    }
+
     var options = {
       'duration': true
     }
 
-    var stream = fs.createReadStream(song.src)
     stream.on('error', (err) => {
       console.log(new Error(`出错了 ${err.code}: ${err.path}`))
     })
 
-    (mm || require('musicmetadata'))(stream, options, showMeta)
+    return mm(stream, options, callback)
+  }
 
-    function showMeta(err, metadata) {
-      if (err) {
-        console.log(`Now playing: ${name} (No metadata found)`);
-        return
+  // Format metadata with template 
+  // And output to `stdout`
+  show(metadata) {
+    var total = 70
+    var info = metadata.title
+    var duration = parseInt(metadata.duration)
+    var dots = total - 1
+    var speed = (duration * 1000) / total
+
+    async.doWhilst(
+      (callback) => {
+        // Doesn't work sometimes on mac
+        // process.stdout.clearLine()
+
+        // Clear console
+        process.stdout.write('\0o33c')
+
+        // Move cursor to beginning of line
+        process.stdout.cursorTo(0)
+        process.stdout.write(getProgress(total - dots, total, info))
+
+        setTimeout(callback, speed)
+
+        dots--
+      },
+      () => dots > 0,
+      (done) => {
+        process.stdout.moveCursor(0, -1)
+        process.stdout.clearLine()
+        process.stdout.cursorTo(0)
       }
-
-      var info = metadata.title
-      var duration = parseInt(metadata.duration)
-      var dots = total - 1
-      var speed = (duration * 1000) / total
-
-      async.doWhilst(
-        (callback) => {
-          // Doesn't work sometimes on mac
-          // process.stdout.clearLine()
-
-          // Clear console
-          process.stdout.write('\0o33c')
-
-          // Move cursor to beginning of line
-          process.stdout.cursorTo(0)
-          process.stdout.write(getProgress(total - dots, total, info))
-
-          setTimeout(callback, speed)
-
-          dots--
-        },
-        () => dots > 0,
-        (done) => {
-          process.stdout.moveCursor(0, -1)
-          process.stdout.clearLine()
-          process.stdout.cursorTo(0)
-        }
-      )
-    }
+    )
   }
 }

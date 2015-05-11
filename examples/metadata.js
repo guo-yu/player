@@ -7,6 +7,10 @@ new Player(path.join(__dirname, 'demo3_with_metadata.mp3'))
   .on('playing', function(song) {
     debug('Playing... ');
     debug(song.meta);
+
+    // Show formated metadata to `stdout`
+    if (song.meta)
+      this.show(song.meta);
   })
   .on('error', function(err) {
     debug('Opps...!')
