@@ -1,4 +1,4 @@
-var Player = require('../index');
+var Player = require('../dist/player');
 var pkg = require('../package.json');
 var debug = require('debug')(pkg.name);
 
