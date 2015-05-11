@@ -18,8 +18,6 @@ import events from "events"
 import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
-import mm from 'musicmetadata'
-
 import utils from './utils'
 
 const defaults = {
@@ -97,7 +95,11 @@ export default class Player {
           self.speaker.Speaker = speaker
           self.emit('playing', song)
 
-          self.show(song)
+          try {
+            self.show(song, require('musicmetadata'))
+          } catch (err) {
+            // Ignore the error.
+          }
 
           // This is where the song acturaly played end,
           // can't trigger playend event here cause
@@ -293,48 +295,54 @@ export default class Player {
     )
   }
 
-  show(song) {
+  show(song, mm) {
     var total = 70
     var name = song['src'].split('/').pop()
     var options = {
       'duration': true
     }
     
-    var parser = mm(fs.createReadStream(name), options, (err, metadata) => {
-      if (err) {
-        console.log(`Now playing: ${name} (No metadata found)`);
-        return
-      }
+    try {
+      (mm || require('musicmetadata'))(fs.createReadStream(name), options, showMeta)
 
-      var info = metadata.title
-      var duration = parseInt(metadata.duration)
-      var dots = total - 1
-      var speed = (duration * 1000) / total
-
-      async.doWhilst(
-        (callback) => {
-          // Doesn't work sometimes on mac
-          // process.stdout.clearLine()
-
-          // Clear console
-          process.stdout.write('\0o33c')
-
-          // Move cursor to beginning of line
-          process.stdout.cursorTo(0)
-          process.stdout.write(utils.getProgress(total - dots, total, info))
-
-          setTimeout(callback, speed)
-
-          dots--
-        },
-        () => dots > 0,
-        (done) => {
-          process.stdout.moveCursor(0, -1)
-          process.stdout.clearLine()
-          process.stdout.cursorTo(0)
+      function showMeta(err, metadata) {
+        if (err) {
+          console.log(`Now playing: ${name} (No metadata found)`);
+          return
         }
-      )
-    })
+
+        var info = metadata.title
+        var duration = parseInt(metadata.duration)
+        var dots = total - 1
+        var speed = (duration * 1000) / total
+
+        async.doWhilst(
+          (callback) => {
+            // Doesn't work sometimes on mac
+            // process.stdout.clearLine()
+
+            // Clear console
+            process.stdout.write('\0o33c')
+
+            // Move cursor to beginning of line
+            process.stdout.cursorTo(0)
+            process.stdout.write(utils.getProgress(total - dots, total, info))
+
+            setTimeout(callback, speed)
+
+            dots--
+          },
+          () => dots > 0,
+          (done) => {
+            process.stdout.moveCursor(0, -1)
+            process.stdout.clearLine()
+            process.stdout.cursorTo(0)
+          }
+        )
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 }
 

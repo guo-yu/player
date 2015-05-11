@@ -39,11 +39,11 @@
     "lame": "1.2.2",
     "speaker": "0.2.5",
     "pool_stream": "0.0.2",
-    "underscore": "~1.6.0",
-    "musicmetadata": "1.0.1"
+    "underscore": "~1.6.0"
   },
   "devDependencies": {
     "babel": "^5.1.11",
+    "musicmetadata": "1.0.1",
     "debug": "^2.1.0"
   }
 }
