@@ -82,7 +82,7 @@ $ node ./examples/next.js
 ````
 
 ### API
-check this file: `index.js`
+check this file: `libs/player.js`
 
 ### Contributing
 - Fork this repo
