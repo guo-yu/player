@@ -115,9 +115,8 @@ var Player = (function (_EventEmitter) {
     /**
      * [Play a mp3 list]
      * @param  {Function} done     [the callback function when all mp3s play end]
-     * @param  {[type]}   selected [the selected mp3 object.]
      */
-    value: function play(done, selected) {
+    value: function play(done) {
       var _this3 = this;
 
       var self = this;
@@ -126,19 +125,21 @@ var Player = (function (_EventEmitter) {
 
       if (this.list.length <= 0) return;
 
-      _async2['default'].eachSeries(selected || this.list, startPlay, function (err) {
+      _async2['default'].eachSeries(this.list, startPlay, function (err) {
         return _this3.emit('done', err);
       });
 
       return this;
 
       function startPlay(song, callback) {
-        var url = _underscore2['default'].isString(song) ? song : song[self.options.src];
-
-        self.read(url, onPlay);
+        self.read(song[self.options.src], onPlay);
 
         function onPlay(err, pool) {
           if (err) return callback(err);
+
+          self.meta(pool, function (err, data) {
+            if (!err) song.meta = data;
+          });
 
           pool.pipe(new _lame2['default'].Decoder()).once('format', onPlaying).once('finish', onFinished);
 
@@ -149,10 +150,6 @@ var Player = (function (_EventEmitter) {
             self.speaker.readableStream = this;
             self.speaker.Speaker = speaker;
             self.emit('playing', song);
-
-            try {
-              self.show(song, require('musicmetadata'));
-            } catch (err) {}
 
             // This is where the song acturaly played end,
             // can't trigger playend event here cause
@@ -337,53 +334,59 @@ var Player = (function (_EventEmitter) {
       }));
     }
   }, {
-    key: 'show',
-    value: function show(song, mm) {
-      var total = 70;
-      var name = song.src.split('/').pop();
+    key: 'meta',
+
+    // Fetch metadata from local or remote mp3 stream
+    value: function meta(stream, callback) {
+      try {
+        var mm = require('musicmetadata');
+      } catch (err) {
+        return callback(err);
+      }
+
       var options = {
         'duration': true
       };
 
-      try {
-        var showMeta = function (err, metadata) {
-          if (err) {
-            console.log('Now playing: ' + name + ' (No metadata found)');
-            return;
-          }
+      stream.on('error', function (err) {
+        console.log(new Error('出错了 ' + err.code + ': ' + err.path));
+      });
 
-          var info = metadata.title;
-          var duration = parseInt(metadata.duration);
-          var dots = total - 1;
-          var speed = duration * 1000 / total;
+      return mm(stream, options, callback);
+    }
+  }, {
+    key: 'show',
 
-          _async2['default'].doWhilst(function (callback) {
-            // Doesn't work sometimes on mac
-            // process.stdout.clearLine()
+    // Format metadata with template
+    // And output to `stdout`
+    value: function show(metadata) {
+      var total = 70;
+      var info = metadata.title;
+      var duration = parseInt(metadata.duration);
+      var dots = total - 1;
+      var speed = duration * 1000 / total;
 
-            // Clear console
-            process.stdout.write('\u0000o33c');
+      _async2['default'].doWhilst(function (callback) {
+        // Doesn't work sometimes on mac
+        // process.stdout.clearLine()
 
-            // Move cursor to beginning of line
-            process.stdout.cursorTo(0);
-            process.stdout.write(_utils.getProgress(total - dots, total, info));
+        // Clear console
+        process.stdout.write('\u0000o33c');
 
-            setTimeout(callback, speed);
+        // Move cursor to beginning of line
+        process.stdout.cursorTo(0);
+        process.stdout.write(_utils.getProgress(total - dots, total, info));
 
-            dots--;
-          }, function () {
-            return dots > 0;
-          }, function (done) {
-            process.stdout.moveCursor(0, -1);
-            process.stdout.clearLine();
-            process.stdout.cursorTo(0);
-          });
-        };
+        setTimeout(callback, speed);
 
-        (mm || require('musicmetadata'))(_fs2['default'].createReadStream(song.src), options, showMeta);
-      } catch (err) {
-        console.log(err);
-      }
+        dots--;
+      }, function () {
+        return dots > 0;
+      }, function (done) {
+        process.stdout.moveCursor(0, -1);
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+      });
     }
   }]);
 

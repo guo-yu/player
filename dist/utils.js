@@ -25,21 +25,29 @@ function format(list) {
   if (typeof list === 'string') {
     songs.push({
       src: list,
-      _id: 0 });
+      _id: 0,
+      _name: fetchName(list) });
 
     return songs;
   }
 
   list.forEach(function (item, index) {
+    // If `songs` is a Map
     if (typeof item === 'object') {
       item._id = index;
+
+      if (item.src) item._name = fetchName(item.src);
+
       songs.push(item);
       return;
     }
 
+    // If `songs` is a Array
     songs.push({
       src: item,
-      _id: index });
+      _id: index,
+      _name: fetchName(item)
+    });
   });
 
   return songs;
@@ -57,5 +65,9 @@ function getProgress(p, t, info) {
   bar += '|';
 
   return bar;
+}
+
+function fetchName(str) {
+  return str.split('/').pop();
 }
 //# sourceMappingURL=utils.js.map
