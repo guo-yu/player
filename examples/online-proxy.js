@@ -2,32 +2,31 @@ var Player = require('../dist/player');
 var pkg = require('../package.json');
 var debug = require('debug')(pkg.name);
 
-var player = new Player([
+var songs = [
   'http://node-player.qiniudn.com/demo.mp3',
   'http://node-player.qiniudn.com/demo2.mp3'
-], {
-  http_proxy: "http://127.0.0.1:8087"
-});
+]
 
-player.play(function(err) {
-  debug('all songs play end');
-});
+var options = {
+  'http_proxy': 'http://127.0.0.1:8087'
+}
 
-player.on('downloading', function(song) {
-  debug('im downloading... ');
-  debug(song);
-});
-
-player.on('playing', function(song) {
-  debug('im playing... ');
-  debug(song);
-});
-
-player.on('playend', function(song) {
-  debug('play done, switching to next one ...');
-});
-
-player.on('error', function(err) {
-  debug('Opps...!')
-  debug(err);
-});
+new Player(songs, options)
+  .play(function(err) {
+    debug('all songs play end');
+  })
+  .on('downloading', function(song) {
+    debug('im downloading... ');
+    debug(song);
+  })
+  .on('playing', function(song) {
+    debug('im playing... ');
+    debug(song);
+  })
+  .on('playend', function(song) {
+    debug('play done, switching to next one ...');
+  })
+  .on('error', function(err) {
+    debug('Opps...!')
+    debug(err);
+  })

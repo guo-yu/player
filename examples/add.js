@@ -1,49 +1,47 @@
+var path = require('path');
 var Player = require('../dist/player');
 var pkg = require('../package.json');
 var debug = require('debug')(pkg.name);
 
-var player = new Player([
-  __dirname + '/demo.mp3'
-]);
+var songs = [
+  path.join(__dirname, './mp3/demo.mp3')
+]
 
-player.play(function(err) {
-  debug('all songs play end');
-});
+new Player(songs)
+  .play(function(err) {
+    debug('all songs play end');
+  })
+  .on('downloading', function(song) {
+    debug('I\'m downloading... ');
+    debug(song);
+  })
+  .on('playing', function(song) {
+    var player = this
+    debug('I\'m playing... ');
+    debug(song);
+    debug('Add new song');
 
-player.on('downloading', function(song) {
-  debug('I\'m downloading... ');
-  debug(song);
-});
+    if (song._id === 0)
+      player.add('http://node-player.qiniudn.com/demo2.mp3');
 
-player.on('playing', function(song) {
+    debug('Will switch to next song in 3s:');
 
-  debug('I\'m playing... ');
-  debug(song);
-  debug('Add new song');
+    setTimeout(function(){
+      debug('Switching...');
 
-  if (song._id === 0)
-    player.add('http://node-player.qiniudn.com/demo2.mp3');
+      player.next(function(err, song){
+        if (!err)
+          return debug('Switched !!');
 
-  debug('Will switch to next song in 3s:');
+        return debug(err);
+      });
 
-  setTimeout(function(){
-    debug('Switching...');
-
-    player.next(function(err, song){
-      if (!err)
-        return debug('Switched !!');
-
-      return debug(err);
-    });
-
-  }, 3000);
-});
-
-player.on('playend', function(song) {
-  debug('play done, switching to next one ...');
-});
-
-player.on('error', function(err) {
-  debug('Opps...!')
-  debug(err);
-});
+    }, 3000);
+  })
+  .on('playend', function(song) {
+    debug('play done, switching to next one ...');
+  })
+  .on('error', function(err) {
+    debug('Opps...!')
+    debug(err);
+  })
