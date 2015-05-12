@@ -10,14 +10,12 @@ var songs = [
 
 new Player(songs)
   .play(function(err) {
-    debug("Play List:" + this.playList());
-    debug('all songs play end');
-    debug("Play List End:" + this.playList());
+    debug('Play List:' + this.list)
   })
   .on('playend', function(song) {
-    debug("Play List After Song Played:" + this.playList());
+    debug('Play List After Song Played')
   })
   .on('error', function(err) {
     debug('Opps...!')
-    debug(err);
+    debug(err)
   })
