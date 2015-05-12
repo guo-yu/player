@@ -1,6 +1,8 @@
 ## ![player](http://ww2.sinaimg.cn/large/61ff0de3gw1eg98y1go77j201q00zwe9.jpg) player ![](https://badge.fury.io/js/player.png)
 
-a command line player, supports play mp3 both from url and local stream.
+A command line player, supports play mp3 both from url and local stream.
+
+Now support Node.js `v0.12.0` and io.js `v2.0.0`
 
 ### Installation
 
