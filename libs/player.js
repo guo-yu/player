@@ -51,6 +51,24 @@ export default class Player extends EventEmitter {
       this.history.push(song)
     })
   }
+
+  /**
+   * [Lists songs in the playlist,
+   * Displays the src for each song returned in JSON,
+   * Access with prop `player.list`]
+   */
+  get list() {
+    if (!this.list)
+      return
+
+    return JSON.stringify(
+      this.list.map((el) => el.src)
+    )
+  }
+
+  get playing() {
+    return this.playing
+  }
   
   /**
    * [Play a mp3 list]
@@ -93,20 +111,23 @@ export default class Player extends EventEmitter {
         function onPlaying(f) {
           var speaker = new Speaker(f)
 
-          self.speaker = {};
-          self.speaker.readableStream = this
-          self.speaker.Speaker = speaker
+          self.speaker = {
+            'readableStream': this,
+            'Speaker': speaker,
+          }
+
           self.emit('playing', song)
 
           // This is where the song acturaly played end,
           // can't trigger playend event here cause
           // unpipe will fire this speaker's close event.
           this.pipe(speaker)
-            .once('close', () => self.emit('stopped', song))
+            .once('close', () => 
+              self.emit('stopped', song))
         }
 
         function onFinished() {
-          self.list = self.list.filter((i) => i['_id'] != song._id)
+          self.list = self.list.filter((item) => item._id != song._id)
           self.emit('playend', song)
 
           // Switch to next one
@@ -277,19 +298,6 @@ export default class Player extends EventEmitter {
       if (!called)
         callback(err)
     }
-  }
-
-  /**
-   * [Lists songs in the playlist,
-   * Displays the src for each song returned in JSON]
-   */
-  playList() {
-    if (!this.list)
-      return
-
-    return JSON.stringify(
-      this.list.map((el) => el.src)
-    )
   }
 
   // Fetch metadata from local or remote mp3 stream
