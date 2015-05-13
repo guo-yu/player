@@ -110,6 +110,26 @@ var Player = (function (_EventEmitter) {
   _inherits(Player, _EventEmitter);
 
   _createClass(Player, [{
+    key: 'list',
+
+    /**
+     * [Lists songs in the playlist,
+     * Displays the src for each song returned in JSON,
+     * Access with prop `player.list`]
+     */
+    get: function () {
+      if (!this.list) return;
+
+      return JSON.stringify(this.list.map(function (el) {
+        return el.src;
+      }));
+    }
+  }, {
+    key: 'playing',
+    get: function () {
+      return this.playing;
+    }
+  }, {
     key: 'play',
 
     /**
@@ -146,9 +166,10 @@ var Player = (function (_EventEmitter) {
           function onPlaying(f) {
             var speaker = new _speaker2['default'](f);
 
-            self.speaker = {};
-            self.speaker.readableStream = this;
-            self.speaker.Speaker = speaker;
+            self.speaker = {
+              'readableStream': this,
+              'Speaker': speaker };
+
             self.emit('playing', song);
 
             // This is where the song acturaly played end,
@@ -160,8 +181,8 @@ var Player = (function (_EventEmitter) {
           }
 
           function onFinished() {
-            self.list = self.list.filter(function (i) {
-              return i['_id'] != song._id;
+            self.list = self.list.filter(function (item) {
+              return item._id != song._id;
             });
             self.emit('playend', song);
 
@@ -318,20 +339,6 @@ var Player = (function (_EventEmitter) {
       function errorHandler(err) {
         if (!called) callback(err);
       }
-    }
-  }, {
-    key: 'playList',
-
-    /**
-     * [Lists songs in the playlist,
-     * Displays the src for each song returned in JSON]
-     */
-    value: function playList() {
-      if (!this.list) return;
-
-      return JSON.stringify(this.list.map(function (el) {
-        return el.src;
-      }));
     }
   }, {
     key: 'meta',
