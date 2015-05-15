@@ -84,7 +84,35 @@ $ node ./examples/next.js
 ````
 
 ### API
-check this file: `libs/player.js`
+
+#### new Player(playList)
+
+Init a new Player with provided `playList`
+
+- `playList`: String|Array[String]
+
+#### player.add(song)
+
+Add a song to current `playlist`
+
+- `song`: String|Object[src: String]
+
+#### player.play()
+
+Play right now
+
+#### player.stop()
+
+Stop playing, unpipe the source stream
+
+#### player.next()
+
+Switch to next song in the current playlist
+
+#### player.on(eventName, callback)
+
+- `eventName`: Would be `playing`, `playend` or `error`
+- `callback`: The callback function
 
 ### Contributing
 - Fork this repo
