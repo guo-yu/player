@@ -41,7 +41,7 @@ export default class Player extends EventEmitter {
     // Inherits eventEmitter
     super()
 
-    this.list = format(songs)
+    this._list = format(songs)
     this.history = []
     this.options = _.extend(defaults, params)
 
@@ -58,16 +58,12 @@ export default class Player extends EventEmitter {
    * Access with prop `player.list`]
    */
   get list() {
-    if (!this.list)
+    if (!this._list)
       return
 
     return JSON.stringify(
-      this.list.map((el) => el.src)
+      this._list.map(el => el.src)
     )
-  }
-
-  get playing() {
-    return this.playing
   }
   
   /**
@@ -80,13 +76,13 @@ export default class Player extends EventEmitter {
     if (done !== 'next')
       this.once('done', _.isFunction(done) ? done : errHandler)
 
-    if (this.list.length <= 0)
+    if (this._list.length <= 0)
       return
 
     async.eachSeries(
-      this.list, 
+      this._list,
       startPlay, 
-      (err) => this.emit('done', err)
+      err => this.emit('done', err)
     )
 
     return this
@@ -127,7 +123,7 @@ export default class Player extends EventEmitter {
         }
 
         function onFinished() {
-          self.list = self.list.filter((item) => item._id != song._id)
+          self.list = self.list.filter(item => item._id != song._id)
           self.emit('playend', song)
 
           // Switch to next one
@@ -195,7 +191,7 @@ export default class Player extends EventEmitter {
    * @return {Bool}
    */
   next(callback) {
-    var list = this.list;
+    var list = this._list;
     var current = this.history[this.history.length - 1];
     var next = list[current._id + 1];
     var isCallback = callback && _.isFunction(callback);
@@ -219,17 +215,17 @@ export default class Player extends EventEmitter {
    * @param {String|Object} song [src URI of new song or the object of new song.]
    */
   add(song) {
-    if (!this.list)
-      this.list = []
+    if (!this._list)
+      this._list = []
 
     var latest = _.isObject(song) ? song : {}
 
-    latest._id = this.list.length
+    latest._id = this._list.length
 
     if (_.isString(song))
       latest.src = song
 
-    this.list.push(latest)
+    this._list.push(latest)
   }
 
   /**
