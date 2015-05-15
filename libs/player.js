@@ -41,15 +41,9 @@ export default class Player extends EventEmitter {
     // Inherits eventEmitter
     super()
 
-    this._list = format(songs)
     this.history = []
+    this._list = format(songs)
     this.options = _.extend(defaults, params)
-
-    // Bind events
-    this.once('playing', (song) => {
-      this.playing = song
-      this.history.push(song)
-    })
   }
 
   /**
@@ -68,9 +62,10 @@ export default class Player extends EventEmitter {
   
   /**
    * [Play a mp3 list]
-   * @param  {Function} done     [the callback function when all mp3s play end]
+   * @param  {Function}      done     [the callback function when all mp3s play end]
+   * @param  {Array[Object]} selected [the selected mp3 object.]
    */
-  play(done) {
+  play(done, selected) {
     var self = this
 
     if (done !== 'next')
@@ -80,7 +75,7 @@ export default class Player extends EventEmitter {
       return
 
     async.eachSeries(
-      this._list,
+      selected || this._list,
       startPlay, 
       err => this.emit('done', err)
     )
@@ -113,6 +108,7 @@ export default class Player extends EventEmitter {
           }
 
           self.emit('playing', song)
+          self.history.push(song)
 
           // This is where the song acturaly played end,
           // can't trigger playend event here cause
