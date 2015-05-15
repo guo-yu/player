@@ -28,7 +28,7 @@ function format(list, srcKey) {
   if (typeof list === 'string') {
     var _songs$push;
 
-    songs.push((_songs$push = {}, _defineProperty(_songs$push, srcKey, list), _defineProperty(_songs$push, '_id', 0), _defineProperty(_songs$push, '_name', fetchName(list)), _songs$push));
+    songs.push((_songs$push = {}, _defineProperty(_songs$push, srcKey, list), _defineProperty(_songs$push, '_id', 0), _defineProperty(_songs$push, '_name', splitName(list)), _songs$push));
 
     return songs;
   }
@@ -40,14 +40,14 @@ function format(list, srcKey) {
     if (typeof item === 'object') {
       item._id = index;
 
-      if (item[srcKey]) item._name = fetchName(item[srcKey]);
+      if (item[srcKey]) item._name = splitName(item[srcKey]);
 
       songs.push(item);
       return;
     }
 
     // If `songs` is a Array
-    songs.push((_songs$push2 = {}, _defineProperty(_songs$push2, srcKey, item), _defineProperty(_songs$push2, '_id', index), _defineProperty(_songs$push2, '_name', fetchName(item)), _songs$push2));
+    songs.push((_songs$push2 = {}, _defineProperty(_songs$push2, srcKey, item), _defineProperty(_songs$push2, '_id', index), _defineProperty(_songs$push2, '_name', splitName(item)), _songs$push2));
   });
 
   return songs;
@@ -65,18 +65,18 @@ function chooseRandom(arr) {
 function getProgress(p, t, info) {
   var bar = '';
   bar += 'Now playing: ' + info;
-  bar += '\n';
+  bar += '\n[';
 
   for (var i = 0; i < p; i++) bar += '>';
 
   for (var i = p; i < t - 1; i++) bar += ' ';
 
-  bar += '|';
+  bar += ']';
 
   return bar;
 }
 
-function fetchName(str) {
+function splitName(str) {
   return str.split('/').pop();
 }
 //# sourceMappingURL=utils.js.map

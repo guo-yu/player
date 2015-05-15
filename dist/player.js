@@ -155,6 +155,7 @@ var Player = (function (_EventEmitter) {
       var index = arguments[0] === undefined ? 0 : arguments[0];
 
       if (this._list.length <= 0) return;
+      if (!_underscore2['default'].isNumber(index)) index = 0;
 
       var self = this;
       var song = this._list[index];
@@ -237,10 +238,11 @@ var Player = (function (_EventEmitter) {
     value: function next() {
       var list = this._list;
       var current = this.playing;
-      var nextIndex = this.options.shuffle ? chooseRandom(_underscore2['default'].difference(list, [current._id])) : current._id + 1;
+      var nextIndex = this.options.shuffle ? _utils.chooseRandom(_underscore2['default'].difference(list, [current._id])) : current._id + 1;
 
       if (nextIndex >= list.length) {
         this.emit('error', 'No next song was found');
+        this.emit('finish', current);
         return this;
       }
 
@@ -262,7 +264,10 @@ var Player = (function (_EventEmitter) {
 
       latest._id = this._list.length;
 
-      if (_underscore2['default'].isString(song)) latest[this.options.src] = song;
+      if (_underscore2['default'].isString(song)) {
+        latest._name = _utils.splitName(song);
+        latest[this.options.src] = song;
+      }
 
       this._list.push(latest);
     }
@@ -331,6 +336,8 @@ var Player = (function (_EventEmitter) {
 
     // Fetch metadata from local or remote mp3 stream
     value: function meta(stream, callback) {
+      var _this4 = this;
+
       try {
         var mm = require('musicmetadata');
       } catch (err) {
@@ -342,33 +349,31 @@ var Player = (function (_EventEmitter) {
       };
 
       stream.on('error', function (err) {
-        console.log(new Error('出错了 ' + err.code + ': ' + err.path));
+        return _this4.emit('error', '出错了 ' + err.code + ': ' + err.path);
       });
 
       return mm(stream, options, callback);
     }
   }, {
-    key: 'show',
+    key: 'progress',
 
     // Format metadata with template
     // And output to `stdout`
-    value: function show(metadata) {
+    value: function progress(metadata) {
       var total = 70;
       var info = metadata.title;
       var duration = parseInt(metadata.duration);
       var dots = total - 1;
       var speed = duration * 1000 / total;
+      var stdout = process.stdout;
 
       _async2['default'].doWhilst(function (callback) {
-        // Doesn't work sometimes on mac
-        // process.stdout.clearLine()
-
         // Clear console
-        process.stdout.write('\u0000o33c');
+        stdout.write('\u001b[2J\u001b[0;0f');
 
         // Move cursor to beginning of line
-        process.stdout.cursorTo(0);
-        process.stdout.write(_utils.getProgress(total - dots, total, info));
+        stdout.cursorTo(0);
+        stdout.write(_utils.getProgress(total - dots, total, info));
 
         setTimeout(callback, speed);
 
@@ -376,9 +381,9 @@ var Player = (function (_EventEmitter) {
       }, function () {
         return dots > 0;
       }, function (done) {
-        process.stdout.moveCursor(0, -1);
-        process.stdout.clearLine();
-        process.stdout.cursorTo(0);
+        stdout.moveCursor(0, -1);
+        stdout.clearLine();
+        stdout.cursorTo(0);
       });
     }
   }]);
