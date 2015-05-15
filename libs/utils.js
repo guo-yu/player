@@ -72,6 +72,6 @@ export function getProgress(p, t, info) {
   return bar
 }
 
-function splitName(str) {
+export function splitName(str) {
   return str.split('/').pop()
 }
