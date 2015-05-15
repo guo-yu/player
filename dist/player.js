@@ -6,9 +6,9 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { desc = parent = getter = undefined; _again = false; var object = _x,
-    property = _x2,
-    receiver = _x3; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { desc = parent = getter = undefined; _again = false; var object = _x2,
+    property = _x3,
+    receiver = _x4; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -76,6 +76,7 @@ var defaults = {
   'src': 'src',
   'cache': false,
   'stream': false,
+  'shuffle': false,
   'downloads': _home2['default'](),
   'http_proxy': process.env.HTTP_PROXY || process.env.http_proxy || null };
 
@@ -95,104 +96,105 @@ var Player = (function (_EventEmitter) {
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
 
     this.history = [];
-    this._list = _utils.format(songs);
     this.options = _underscore2['default'].extend(defaults, params);
+    this._list = _utils.format(songs, this.options.src);
   }
 
   _inherits(Player, _EventEmitter);
 
   _createClass(Player, [{
+    key: 'enable',
+
+    // Enable or disable a option
+    value: function enable(k) {
+      this.options[k] = true;
+      return this;
+    }
+  }, {
+    key: 'disable',
+    value: function disable(k) {
+      this.options[k] = false;
+      return this;
+    }
+  }, {
     key: 'list',
 
     /**
      * [Lists songs in the playlist,
-     * Displays the src for each song returned in JSON,
+     * Displays the src for each song returned in array,
      * Access with prop `player.list`]
      */
     get: function () {
+      var _this2 = this;
+
       if (!this._list) return;
 
-      return JSON.stringify(this._list.map(function (el) {
-        return el.src;
-      }));
+      return this._list.map(function (el) {
+        return el[_this2.options.src];
+      });
+    }
+  }, {
+    key: 'playing',
+
+    // Get the lastest playing song
+    get: function () {
+      if (!this.history.length) return null;
+
+      return this._list[this.history[this.history.length - 1]];
     }
   }, {
     key: 'play',
 
     /**
-     * [Play a mp3 list]
-     * @param  {Function}      done     [the callback function when all mp3s play end]
-     * @param  {Array[Object]} selected [the selected mp3 object.]
+     * [Play a MP3 encoded audio file]
+     * @param  {Number} index [the selected index of first played song]
      */
-    value: function play(done, selected) {
-      var _this2 = this;
+    value: function play() {
+      var _this3 = this;
 
-      var self = this;
-
-      if (done !== 'next') this.once('done', _underscore2['default'].isFunction(done) ? done : errHandler);
+      var index = arguments[0] === undefined ? 0 : arguments[0];
 
       if (this._list.length <= 0) return;
 
-      _async2['default'].eachSeries(selected || this._list, startPlay, function (err) {
-        return _this2.emit('done', err);
+      var self = this;
+      var song = this._list[index];
+
+      this.read(song[this.options.src], function (err, pool) {
+        if (err) return _this3.emit('error', err);
+
+        _this3.meta(pool, function (err, data) {
+          if (!err) song.meta = data;
+        });
+
+        pool.pipe(new _lame2['default'].Decoder()).once('format', onPlaying).once('finish', _this3.next);
+
+        function onPlaying(f) {
+          var speaker = new _speaker2['default'](f);
+
+          self.speaker = {
+            'readableStream': this,
+            'Speaker': speaker };
+
+          self.emit('playing', song);
+          self.history.push(index);
+
+          // This is where the song acturaly played end,
+          // can't trigger playend event here cause
+          // unpipe will fire this speaker's close event.
+          this.pipe(speaker).once('close', function () {
+            return self.emit('playend', song);
+          });
+        }
       });
 
       return this;
-
-      function startPlay(song, callback) {
-        self.read(song[self.options.src], onPlay);
-
-        function onPlay(err, pool) {
-          if (err) return callback(err);
-
-          self.meta(pool, function (err, data) {
-            if (!err) song.meta = data;
-          });
-
-          pool.pipe(new _lame2['default'].Decoder()).once('format', onPlaying).once('finish', onFinished);
-
-          function onPlaying(f) {
-            var speaker = new _speaker2['default'](f);
-
-            self.speaker = {
-              'readableStream': this,
-              'Speaker': speaker };
-
-            self.emit('playing', song);
-            self.history.push(song);
-
-            // This is where the song acturaly played end,
-            // can't trigger playend event here cause
-            // unpipe will fire this speaker's close event.
-            this.pipe(speaker).once('close', function () {
-              return self.emit('stopped', song);
-            });
-          }
-
-          function onFinished() {
-            self.list = self.list.filter(function (item) {
-              return item._id != song._id;
-            });
-            self.emit('playend', song);
-
-            // Switch to next one
-            callback(null);
-          }
-        }
-      }
-
-      function errHandler(err) {
-        if (err) throw err;
-
-        return;
-      }
     }
   }, {
     key: 'read',
 
     /**
-     * [Read mp3 src and check if we're going to download it.]
-     * @param  {String}   src    [mp3 file src, would be local path or URI (http/https)]
+     * [Read MP3 src and check if we're going to download it.]
+     * @param  {String}   src      [MP3 file src, would be local path or URI (http/https)]
      * @param  {Function} callback [callback with err and file stream]
      */
     value: function read(src, callback) {
@@ -229,26 +231,23 @@ var Player = (function (_EventEmitter) {
 
     /**
      * [Stop playing and switch to next song,
-     * if there is no next song, callback with a `No next` Error object.]
-     * @param  {Function} callback [callback with err and next song.]
-     * @return {Bool}
+     * if there is no next song, trigger a `No next song` error event]
+     * @return {player} this
      */
-    value: function next(callback) {
+    value: function next() {
       var list = this._list;
-      var current = this.history[this.history.length - 1];
-      var next = list[current._id + 1];
-      var isCallback = callback && _underscore2['default'].isFunction(callback);
+      var current = this.playing;
+      var nextIndex = this.options.shuffle ? chooseRandom(_underscore2['default'].difference(list, [current._id])) : current._id + 1;
 
-      if (!next) {
-        if (isCallback) return callback(new Error('No next'));
-
-        return;
+      if (nextIndex >= list.length) {
+        this.emit('error', 'No next song was found');
+        return this;
       }
 
       this.stop();
-      this.play('next', list.slice(next._id));
+      this.play(nextIndex);
 
-      return isCallback ? callback(null, next, current) : true;
+      return this;
     }
   }, {
     key: 'add',
@@ -259,13 +258,11 @@ var Player = (function (_EventEmitter) {
      * @param {String|Object} song [src URI of new song or the object of new song.]
      */
     value: function add(song) {
-      if (!this._list) this._list = [];
-
       var latest = _underscore2['default'].isObject(song) ? song : {};
 
       latest._id = this._list.length;
 
-      if (_underscore2['default'].isString(song)) latest.src = song;
+      if (_underscore2['default'].isString(song)) latest[this.options.src] = song;
 
       this._list.push(latest);
     }

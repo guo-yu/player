@@ -5,7 +5,10 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.fetchName = fetchName;
 exports.format = format;
+exports.chooseRandom = chooseRandom;
 exports.getProgress = getProgress;
+
+function _defineProperty(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); }
 
 function fetchName(str) {
   var filename = str.substr(str.lastIndexOf('/') + 1);
@@ -19,38 +22,44 @@ function fetchName(str) {
   return filename;
 }
 
-function format(list) {
+function format(list, srcKey) {
   var songs = [];
 
   if (typeof list === 'string') {
-    songs.push({
-      src: list,
-      _id: 0,
-      _name: fetchName(list) });
+    var _songs$push;
+
+    songs.push((_songs$push = {}, _defineProperty(_songs$push, srcKey, list), _defineProperty(_songs$push, '_id', 0), _defineProperty(_songs$push, '_name', fetchName(list)), _songs$push));
 
     return songs;
   }
 
   list.forEach(function (item, index) {
+    var _songs$push2;
+
     // If `songs` is a Map
     if (typeof item === 'object') {
       item._id = index;
 
-      if (item.src) item._name = fetchName(item.src);
+      if (item[srcKey]) item._name = fetchName(item[srcKey]);
 
       songs.push(item);
       return;
     }
 
     // If `songs` is a Array
-    songs.push({
-      src: item,
-      _id: index,
-      _name: fetchName(item)
-    });
+    songs.push((_songs$push2 = {}, _defineProperty(_songs$push2, srcKey, item), _defineProperty(_songs$push2, '_id', index), _defineProperty(_songs$push2, '_name', fetchName(item)), _songs$push2));
   });
 
   return songs;
+}
+
+function chooseRandom(arr) {
+  if (!arr || !arr.length) return 0;
+
+  var min = 0;
+  var max = arr.length - 1;
+
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function getProgress(p, t, info) {
