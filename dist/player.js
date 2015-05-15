@@ -52,10 +52,6 @@ var _lame = require('lame');
 
 var _lame2 = _interopRequireDefault(_lame);
 
-var _async = require('async');
-
-var _async2 = _interopRequireDefault(_async);
-
 var _underscore = require('underscore');
 
 var _underscore2 = _interopRequireDefault(_underscore);
@@ -167,7 +163,9 @@ var Player = (function (_EventEmitter) {
           if (!err) song.meta = data;
         });
 
-        pool.pipe(new _lame2['default'].Decoder()).once('format', onPlaying).once('finish', _this3.next);
+        pool.pipe(new _lame2['default'].Decoder()).once('format', onPlaying).once('finish', function () {
+          return _this3.next();
+        });
 
         function onPlaying(f) {
           var speaker = new _speaker2['default'](f);
@@ -367,7 +365,7 @@ var Player = (function (_EventEmitter) {
       var speed = duration * 1000 / total;
       var stdout = process.stdout;
 
-      _async2['default'].doWhilst(function (callback) {
+      require('async').doWhilst(function (callback) {
         // Clear console
         stdout.write('\u001b[2J\u001b[0;0f');
 

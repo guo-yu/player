@@ -7,6 +7,7 @@ exports.fetchName = fetchName;
 exports.format = format;
 exports.chooseRandom = chooseRandom;
 exports.getProgress = getProgress;
+exports.splitName = splitName;
 
 function _defineProperty(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); }
 
