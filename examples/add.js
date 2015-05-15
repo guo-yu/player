@@ -8,9 +8,6 @@ var songs = [
 ]
 
 new Player(songs)
-  .play(function(err) {
-    debug('all songs play end');
-  })
   .on('downloading', function(song) {
     debug('I\'m downloading... ');
     debug(song);
@@ -24,24 +21,15 @@ new Player(songs)
     if (song._id === 0)
       player.add('http://node-player.qiniudn.com/demo2.mp3');
 
-    debug('Will switch to next song in 3s:');
+    debug('Will switch to next song in 3s:')
 
-    setTimeout(function(){
-      debug('Switching...');
-
-      player.next(function(err, song){
-        if (!err)
-          return debug('Switched !!');
-
-        return debug(err);
-      });
-
-    }, 3000);
+    setTimeout(player.next, 3000)
   })
   .on('playend', function(song) {
-    debug('play done, switching to next one ...');
+    debug('play done, switching to next one ...')
   })
   .on('error', function(err) {
     debug('Opps...!')
-    debug(err);
+    debug(err)
   })
+  .play()

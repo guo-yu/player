@@ -12,9 +12,6 @@ var options = {
 }
 
 new Player(songs, options)
-  .play(function(err) {
-    debug('all songs play end');
-  })
   .on('downloading', function(song) {
     debug('im downloading... ');
     debug(song);
@@ -30,3 +27,4 @@ new Player(songs, options)
     debug('Opps...!')
     debug(err);
   })
+  .play()

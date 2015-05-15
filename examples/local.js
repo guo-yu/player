@@ -9,9 +9,6 @@ var songs = [
 ]
 
 new Player(songs)
-  .play(function(err) {
-    debug('All songs play end');
-  })
   .on('playing', function(song) {
     debug('I\'m playing... ');
     debug(song);
@@ -23,3 +20,4 @@ new Player(songs)
     debug('Opps...!')
     debug(err);
   })
+  .play()

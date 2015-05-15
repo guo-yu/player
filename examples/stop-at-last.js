@@ -8,9 +8,6 @@ var songs = [
 ]
 
 new Player(songs)
-  play(function(err) {
-    debug('all songs play end');
-  })
   on('playing', function(song) {
     var player = this
     
@@ -21,8 +18,8 @@ new Player(songs)
       debug('and I\'ll stop in 5s:');
 
       setTimeout(function(){
-        debug('stopped now !');
-        player.stop();
+        debug('stopped now !')
+        player.stop()
       }, 5000);
     }
   })
@@ -33,3 +30,4 @@ new Player(songs)
     debug('Opps...!')
     debug(err);
   })
+  play()

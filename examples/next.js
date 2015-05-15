@@ -13,9 +13,6 @@ var songs = [
 ]
 
 new Player(songs)
-  .play(function(err) {
-    debug('all songs play end');
-  })
   .on('playing', function(song) {
     var player = this;
 
@@ -23,19 +20,13 @@ new Player(songs)
     debug(song);
     debug('and I\'ll switch to next song in 3s:');
 
-    setTimeout(function(){
-      debug('switch now !');
-
-      player.next(function(err, song){
-        if (!err) return debug('switched !!');
-        return debug(err);
-      });
-    }, 3000);
+    setTimeout(player.next, 3000)
   })
   .on('playend', function(song) {
-    debug('play done, switching to next one ...');
+    debug('play done, switching to next one ...')
   })
   .on('error', function(err) {
     debug('Opps...!')
     debug(err);
   })
+  .play()
