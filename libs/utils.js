@@ -17,7 +17,7 @@ export function format(list, srcKey) {
     songs.push({
       [ srcKey ]: list,
       '_id': 0,
-      '_name': fetchName(list),
+      '_name': splitName(list),
     })
 
     return songs
@@ -29,7 +29,7 @@ export function format(list, srcKey) {
       item._id = index
 
       if (item[srcKey])
-        item._name = fetchName(item[srcKey])
+        item._name = splitName(item[srcKey])
 
       songs.push(item)
       return
@@ -39,7 +39,7 @@ export function format(list, srcKey) {
     songs.push({
       [ srcKey ]: item,
       '_id': index,
-      '_name': fetchName(item)
+      '_name': splitName(item)
     })
   })
 
@@ -72,6 +72,6 @@ export function getProgress(p, t, info) {
   return bar
 }
 
-function fetchName(str) {
+function splitName(str) {
   return str.split('/').pop()
 }

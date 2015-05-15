@@ -18,7 +18,7 @@ import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
 import { EventEmitter } from "events"
-import { fetchName, format, getProgress } from './utils'
+import { fetchName, splitName, format, getProgress, chooseRandom } from './utils'
 
 const defaults = {
   'src': 'src',
@@ -85,6 +85,8 @@ export default class Player extends EventEmitter {
   play(index = 0) {
     if (this._list.length <= 0)
       return
+    if (!_.isNumber(index))
+      index = 0
 
     let self = this
     let song = this._list[index]
@@ -183,6 +185,7 @@ export default class Player extends EventEmitter {
 
     if (nextIndex >= list.length) {
       this.emit('error', 'No next song was found')
+      this.emit('finish', current)
       return this
     }
 
@@ -202,8 +205,10 @@ export default class Player extends EventEmitter {
 
     latest._id = this._list.length
 
-    if (_.isString(song))
+    if (_.isString(song)) {
+      latest._name = splitName(song)
       latest[this.options.src] = song
+    }
 
     this._list.push(latest)
   }
@@ -304,6 +309,7 @@ export default class Player extends EventEmitter {
     var dots = total - 1
     var speed = (duration * 1000) / total
 
+    // Rewrite this block using do while
     async.doWhilst(
       (callback) => {
         // Doesn't work sometimes on mac
