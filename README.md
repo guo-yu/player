@@ -49,7 +49,7 @@ player.next();
 player.add('http://someurl.com/anothersong.mp3');
 
 // list songs in playlist
-player.playlist();
+console.log(player.list)
 
 // event: on playing
 player.on('playing',function(item){
