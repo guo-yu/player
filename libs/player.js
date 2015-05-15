@@ -24,6 +24,7 @@ const defaults = {
   'src': 'src',
   'cache': false,
   'stream': false,
+  'shuffle': false,
   'downloads': home(),
   'http_proxy': process.env.HTTP_PROXY || process.env.http_proxy || null,
 }
@@ -42,104 +43,92 @@ export default class Player extends EventEmitter {
     super()
 
     this.history = []
-    this._list = format(songs)
     this.options = _.extend(defaults, params)
+    this._list = format(songs, this.options.src)
+  }
+
+  // Enable or disable a option
+  enable(k) {
+    this.options[k] = true
+    return this
+  }
+
+  disable(k) {
+    this.options[k] = false
+    return this
   }
 
   /**
    * [Lists songs in the playlist,
-   * Displays the src for each song returned in JSON,
+   * Displays the src for each song returned in array,
    * Access with prop `player.list`]
    */
   get list() {
     if (!this._list)
       return
 
-    return JSON.stringify(
-      this._list.map(el => el.src)
-    )
+    return this._list.map(el => el[this.options.src])
   }
-  
+
+  // Get the lastest playing song
+  get playing() {
+    if (!this.history.length)
+      return null
+
+    return this._list[this.history[this.history.length - 1]]
+  }
+
   /**
-   * [Play a mp3 list]
-   * @param  {Function}      done     [the callback function when all mp3s play end]
-   * @param  {Array[Object]} selected [the selected mp3 object.]
+   * [Play a MP3 encoded audio file]
+   * @param  {Number} index [the selected index of first played song]
    */
-  play(done, selected) {
-    var self = this
-
-    if (done !== 'next')
-      this.once('done', _.isFunction(done) ? done : errHandler)
-
+  play(index = 0) {
     if (this._list.length <= 0)
       return
 
-    async.eachSeries(
-      selected || this._list,
-      startPlay, 
-      err => this.emit('done', err)
-    )
+    let self = this
+    let song = this._list[index]
+
+    this.read(song[this.options.src], (err, pool) => {
+      if (err)
+        return this.emit('error', err)
+
+      this.meta(pool, (err, data) => {
+        if (!err) 
+          song.meta = data
+      })
+
+      pool
+        .pipe(new lame.Decoder())
+        .once('format', onPlaying)
+        .once('finish', this.next)
+
+      function onPlaying(f) {
+        var speaker = new Speaker(f)
+
+        self.speaker = {
+          'readableStream': this,
+          'Speaker': speaker,
+        }
+
+        self.emit('playing', song)
+        self.history.push(index)
+
+        // This is where the song acturaly played end,
+        // can't trigger playend event here cause
+        // unpipe will fire this speaker's close event.
+        this.pipe(speaker)
+          .once('close', () => 
+            self.emit('playend', song))
+      }
+    })
 
     return this
-
-    function startPlay(song, callback) {
-      self.read(song[self.options.src], onPlay)
-
-      function onPlay(err, pool) {
-        if (err)
-          return callback(err)
-
-        self.meta(pool, (err, data) => {
-          if (!err) 
-            song.meta = data
-        })
-
-        pool
-          .pipe(new lame.Decoder())
-          .once('format', onPlaying)
-          .once('finish', onFinished)
-
-        function onPlaying(f) {
-          var speaker = new Speaker(f)
-
-          self.speaker = {
-            'readableStream': this,
-            'Speaker': speaker,
-          }
-
-          self.emit('playing', song)
-          self.history.push(song)
-
-          // This is where the song acturaly played end,
-          // can't trigger playend event here cause
-          // unpipe will fire this speaker's close event.
-          this.pipe(speaker)
-            .once('close', () => 
-              self.emit('stopped', song))
-        }
-
-        function onFinished() {
-          self.list = self.list.filter(item => item._id != song._id)
-          self.emit('playend', song)
-
-          // Switch to next one
-          callback(null)
-        }
-      }
-    }
-
-    function errHandler(err) {
-      if (err) 
-        throw err
-
-      return
-    }
-
   }
 
   /**
-   * [Read mp3 src and check if we're going to download it.]
-   * @param  {String}   src    [mp3 file src, would be local path or URI (http/https)]
+   * [Read MP3 src and check if we're going to download it.]
+   * @param  {String}   src      [MP3 file src, would be local path or URI (http/https)]
    * @param  {Function} callback [callback with err and file stream]
    */
   read(src, callback) {
@@ -182,27 +171,25 @@ export default class Player extends EventEmitter {
 
   /**
    * [Stop playing and switch to next song,
-   * if there is no next song, callback with a `No next` Error object.]
-   * @param  {Function} callback [callback with err and next song.]
-   * @return {Bool}
+   * if there is no next song, trigger a `No next song` error event]
+   * @return {player} this
    */
-  next(callback) {
-    var list = this._list;
-    var current = this.history[this.history.length - 1];
-    var next = list[current._id + 1];
-    var isCallback = callback && _.isFunction(callback);
+  next() {
+    let list = this._list
+    let current = this.playing
+    let nextIndex = this.options.shuffle ? 
+      chooseRandom(_.difference(list, [current._id])) :
+      current._id + 1
 
-    if (!next) {
-      if (isCallback)
-        return callback(new Error('No next'))
-
-      return
+    if (nextIndex >= list.length) {
+      this.emit('error', 'No next song was found')
+      return this
     }
 
     this.stop()
-    this.play('next', list.slice(next._id))
+    this.play(nextIndex)
 
-    return isCallback ? callback(null, next, current) : true
+    return this
   }
 
   /**
@@ -211,15 +198,12 @@ export default class Player extends EventEmitter {
    * @param {String|Object} song [src URI of new song or the object of new song.]
    */
   add(song) {
-    if (!this._list)
-      this._list = []
-
     var latest = _.isObject(song) ? song : {}
 
     latest._id = this._list.length
 
     if (_.isString(song))
-      latest.src = song
+      latest[this.options.src] = song
 
     this._list.push(latest)
   }
