@@ -96,7 +96,7 @@ var Player = (function (_EventEmitter) {
     // Inherits eventEmitter
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
 
-    this.list = _utils.format(songs);
+    this._list = _utils.format(songs);
     this.history = [];
     this.options = _underscore2['default'].extend(defaults, params);
 
@@ -118,16 +118,11 @@ var Player = (function (_EventEmitter) {
      * Access with prop `player.list`]
      */
     get: function () {
-      if (!this.list) return;
+      if (!this._list) return;
 
-      return JSON.stringify(this.list.map(function (el) {
+      return JSON.stringify(this._list.map(function (el) {
         return el.src;
       }));
-    }
-  }, {
-    key: 'playing',
-    get: function () {
-      return this.playing;
     }
   }, {
     key: 'play',
@@ -143,9 +138,9 @@ var Player = (function (_EventEmitter) {
 
       if (done !== 'next') this.once('done', _underscore2['default'].isFunction(done) ? done : errHandler);
 
-      if (this.list.length <= 0) return;
+      if (this._list.length <= 0) return;
 
-      _async2['default'].eachSeries(this.list, startPlay, function (err) {
+      _async2['default'].eachSeries(this._list, startPlay, function (err) {
         return _this3.emit('done', err);
       });
 
@@ -245,7 +240,7 @@ var Player = (function (_EventEmitter) {
      * @return {Bool}
      */
     value: function next(callback) {
-      var list = this.list;
+      var list = this._list;
       var current = this.history[this.history.length - 1];
       var next = list[current._id + 1];
       var isCallback = callback && _underscore2['default'].isFunction(callback);
@@ -270,15 +265,15 @@ var Player = (function (_EventEmitter) {
      * @param {String|Object} song [src URI of new song or the object of new song.]
      */
     value: function add(song) {
-      if (!this.list) this.list = [];
+      if (!this._list) this._list = [];
 
       var latest = _underscore2['default'].isObject(song) ? song : {};
 
-      latest._id = this.list.length;
+      latest._id = this._list.length;
 
       if (_underscore2['default'].isString(song)) latest.src = song;
 
-      this.list.push(latest);
+      this._list.push(latest);
     }
   }, {
     key: 'download',
