@@ -13,7 +13,6 @@ import http from 'http'
 import https from 'https'
 import home from 'home'
 import lame from 'lame'
-import async from 'async'
 import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
@@ -103,7 +102,7 @@ export default class Player extends EventEmitter {
       pool
         .pipe(new lame.Decoder())
         .once('format', onPlaying)
-        .once('finish', this.next)
+        .once('finish', () => this.next())
 
       function onPlaying(f) {
         var speaker = new Speaker(f)
@@ -309,7 +308,7 @@ export default class Player extends EventEmitter {
     var speed = (duration * 1000) / total
     var stdout = process.stdout
 
-    async.doWhilst(
+    require('async').doWhilst(
       (callback) => {
         // Clear console
         stdout.write('\u001B[2J\u001B[0;0f')
