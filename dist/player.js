@@ -87,8 +87,6 @@ var defaults = {
 
 var Player = (function (_EventEmitter) {
   function Player(songs, params) {
-    var _this2 = this;
-
     _classCallCheck(this, Player);
 
     if (!songs) return;
@@ -96,15 +94,9 @@ var Player = (function (_EventEmitter) {
     // Inherits eventEmitter
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
 
-    this._list = _utils.format(songs);
     this.history = [];
+    this._list = _utils.format(songs);
     this.options = _underscore2['default'].extend(defaults, params);
-
-    // Bind events
-    this.once('playing', function (song) {
-      _this2.playing = song;
-      _this2.history.push(song);
-    });
   }
 
   _inherits(Player, _EventEmitter);
@@ -129,10 +121,11 @@ var Player = (function (_EventEmitter) {
 
     /**
      * [Play a mp3 list]
-     * @param  {Function} done     [the callback function when all mp3s play end]
+     * @param  {Function}      done     [the callback function when all mp3s play end]
+     * @param  {Array[Object]} selected [the selected mp3 object.]
      */
-    value: function play(done) {
-      var _this3 = this;
+    value: function play(done, selected) {
+      var _this2 = this;
 
       var self = this;
 
@@ -140,8 +133,8 @@ var Player = (function (_EventEmitter) {
 
       if (this._list.length <= 0) return;
 
-      _async2['default'].eachSeries(this._list, startPlay, function (err) {
-        return _this3.emit('done', err);
+      _async2['default'].eachSeries(selected || this._list, startPlay, function (err) {
+        return _this2.emit('done', err);
       });
 
       return this;
@@ -166,6 +159,7 @@ var Player = (function (_EventEmitter) {
               'Speaker': speaker };
 
             self.emit('playing', song);
+            self.history.push(song);
 
             // This is where the song acturaly played end,
             // can't trigger playend event here cause
