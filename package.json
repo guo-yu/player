@@ -38,7 +38,8 @@
     "bin",
     "libs",
     "dist",
-    "README.me"
+    "README.md",
+    "package.json"
   ],
   "dependencies": {
     "async": "^0.9.0",
