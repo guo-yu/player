@@ -10,14 +10,14 @@ export function fetchName(str) {
   return filename
 }
 
-export function format(list) {
+export function format(list, srcKey) {
   var songs = []
 
   if (typeof(list) === 'string') {
     songs.push({
-      src: list,
-      _id: 0,
-      _name: fetchName(list),
+      [ srcKey ]: list,
+      '_id': 0,
+      '_name': fetchName(list),
     })
 
     return songs
@@ -28,8 +28,8 @@ export function format(list) {
     if (typeof(item) === 'object') {
       item._id = index
 
-      if (item.src)
-        item._name = fetchName(item.src)
+      if (item[srcKey])
+        item._name = fetchName(item[srcKey])
 
       songs.push(item)
       return
@@ -37,13 +37,23 @@ export function format(list) {
 
     // If `songs` is a Array
     songs.push({
-      src: item,
-      _id: index,
-      _name: fetchName(item)
+      [ srcKey ]: item,
+      '_id': index,
+      '_name': fetchName(item)
     })
   })
 
   return songs
+}
+
+export function chooseRandom(arr) {
+  if (!arr || !arr.length)
+    return 0
+
+  let min = 0
+  let max = arr.length - 1
+
+  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 export function getProgress(p, t, info) {
