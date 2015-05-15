@@ -59,7 +59,7 @@ export function chooseRandom(arr) {
 export function getProgress(p, t, info) {
   var bar = ''
   bar += ('Now playing: ' + info)
-  bar += '\n'
+  bar += '\n['
 
   for (var i = 0; i < p; i++)
     bar += '>'
@@ -67,7 +67,7 @@ export function getProgress(p, t, info) {
   for (var i = p; i < t - 1; i++)
     bar += ' '
 
-  bar += '|'
+  bar += ']'
 
   return bar
 }

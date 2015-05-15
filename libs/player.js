@@ -293,34 +293,30 @@ export default class Player extends EventEmitter {
       'duration': true
     }
 
-    stream.on('error', (err) => {
-      console.log(new Error(`出错了 ${err.code}: ${err.path}`))
-    })
+    stream.on('error', err => 
+      this.emit('error', `出错了 ${err.code}: ${err.path}`))
 
     return mm(stream, options, callback)
   }
 
   // Format metadata with template 
   // And output to `stdout`
-  show(metadata) {
+  progress(metadata) {
     var total = 70
     var info = metadata.title
     var duration = parseInt(metadata.duration)
     var dots = total - 1
     var speed = (duration * 1000) / total
+    var stdout = process.stdout
 
-    // Rewrite this block using do while
     async.doWhilst(
       (callback) => {
-        // Doesn't work sometimes on mac
-        // process.stdout.clearLine()
-
         // Clear console
-        process.stdout.write('\0o33c')
+        stdout.write('\u001B[2J\u001B[0;0f')
 
         // Move cursor to beginning of line
-        process.stdout.cursorTo(0)
-        process.stdout.write(getProgress(total - dots, total, info))
+        stdout.cursorTo(0)
+        stdout.write(getProgress(total - dots, total, info))
 
         setTimeout(callback, speed)
 
@@ -328,9 +324,9 @@ export default class Player extends EventEmitter {
       },
       () => dots > 0,
       (done) => {
-        process.stdout.moveCursor(0, -1)
-        process.stdout.clearLine()
-        process.stdout.cursorTo(0)
+        stdout.moveCursor(0, -1)
+        stdout.clearLine()
+        stdout.cursorTo(0)
       }
     )
   }
