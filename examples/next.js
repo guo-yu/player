@@ -20,7 +20,9 @@ new Player(songs)
     debug(song);
     debug('and I\'ll switch to next song in 3s:');
 
-    setTimeout(player.next, 3000)
+    setTimeout(function(){
+      player.next()
+    }, 3000)
   })
   .on('playend', function(song) {
     debug('play done, switching to next one ...')

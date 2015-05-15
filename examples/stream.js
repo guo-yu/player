@@ -2,11 +2,8 @@ var Player = require('../dist/player');
 var pkg = require('../package.json');
 var debug = require('debug')(pkg.name);
 
-var options = {
-  stream: true
-}
-
-new Player('http://stream.srg-ssr.ch/m/rsp/mp3_128', options)
+new Player('http://stream.srg-ssr.ch/m/rsp/mp3_128')
+  .enable('stream')
   .on('playing', function(song) {
     debug('Playing... ');
     debug(song);
