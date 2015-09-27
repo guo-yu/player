@@ -45,8 +45,8 @@
   "dependencies": {
     "async": "^0.9.0",
     "home": "^0.1.3",
-    "lame": "1.2.2",
-    "speaker": "0.2.6",
+    "lame": "^1.2.2",
+    "speaker": "^0.2.6",
     "pool_stream": "0.0.2",
     "underscore": "~1.6.0"
   },
