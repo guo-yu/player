@@ -44,7 +44,7 @@ export default class Player extends EventEmitter {
     this.history = []
     this.options = _.extend(defaults, params)
     this._list = format(songs || [], this.options.src)
-    if (!this._list.length) this._list.length = []
+    if (!this._list || !this._list.length) this._list.length = []
   }
 
   // Enable or disable a option
