@@ -152,6 +152,7 @@ var Player = (function (_EventEmitter) {
 
       if (this._list.length <= 0) return;
       if (!_underscore2['default'].isNumber(index)) index = 0;
+      if (index >= this._list.length) index = this._list.length - 1;
 
       var self = this;
       var song = this._list[index];
