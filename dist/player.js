@@ -93,7 +93,7 @@ var Player = (function (_EventEmitter) {
 
     this.history = [];
     this.options = _underscore2['default'].extend(defaults, params);
-    this._list = _utils.format(songs || [], this.options.src);
+    this._list = _utils.format(songs || [], this.options.src) || [];
   }
 
   _inherits(Player, _EventEmitter);
