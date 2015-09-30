@@ -35,8 +35,8 @@ const defaults = {
  */
 export default class Player extends EventEmitter {
   constructor(songs, params) {
-    if (!songs)
-      return
+//    if (!songs)
+//      return
 
     // Inherits eventEmitter
     super()
