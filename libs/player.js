@@ -35,15 +35,15 @@ const defaults = {
  */
 export default class Player extends EventEmitter {
   constructor(songs, params) {
-    if (!songs)
-      return
+//    if (!songs)
+//      return
 
     // Inherits eventEmitter
     super()
 
     this.history = []
     this.options = _.extend(defaults, params)
-    this._list = format(songs, this.options.src)
+    this._list = format(songs || [], this.options.src)
   }
 
   // Enable or disable a option

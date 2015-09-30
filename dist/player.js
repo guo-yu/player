@@ -86,14 +86,14 @@ var Player = (function (_EventEmitter) {
   function Player(songs, params) {
     _classCallCheck(this, Player);
 
-    if (!songs) return;
+//    if (!songs) return;
 
     // Inherits eventEmitter
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
 
     this.history = [];
     this.options = _underscore2['default'].extend(defaults, params);
-    this._list = _utils.format(songs, this.options.src);
+    this._list = _utils.format(songs || [], this.options.src);
   }
 
   _inherits(Player, _EventEmitter);
