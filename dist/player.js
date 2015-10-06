@@ -86,14 +86,15 @@ var Player = (function (_EventEmitter) {
   function Player(songs, params) {
     _classCallCheck(this, Player);
 
-    if (!songs) return;
+//    if (!songs) return;
 
     // Inherits eventEmitter
     _get(Object.getPrototypeOf(Player.prototype), 'constructor', this).call(this);
 
     this.history = [];
     this.options = _underscore2['default'].extend(defaults, params);
-    this._list = _utils.format(songs, this.options.src);
+    this._list = _utils.format(songs || [], this.options.src);
+    if (!this._list || !this._list.length) this._list = [];
   }
 
   _inherits(Player, _EventEmitter);
@@ -152,6 +153,7 @@ var Player = (function (_EventEmitter) {
 
       if (this._list.length <= 0) return;
       if (!_underscore2['default'].isNumber(index)) index = 0;
+      if (index >= this._list.length) index = this._list.length - 1;
 
       var self = this;
       var song = this._list[index];

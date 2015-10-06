@@ -35,15 +35,16 @@ const defaults = {
  */
 export default class Player extends EventEmitter {
   constructor(songs, params) {
-    if (!songs)
-      return
+//    if (!songs)
+//      return
 
     // Inherits eventEmitter
     super()
 
     this.history = []
     this.options = _.extend(defaults, params)
-    this._list = format(songs, this.options.src)
+    this._list = format(songs || [], this.options.src)
+    if (!this._list || !this._list.length) this._list = []
   }
 
   // Enable or disable a option
@@ -86,6 +87,7 @@ export default class Player extends EventEmitter {
       return
     if (!_.isNumber(index))
       index = 0
+    if (index >= this._list.length) index = this._list.length - 1;
 
     let self = this
     let song = this._list[index]
