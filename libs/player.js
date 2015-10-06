@@ -9,8 +9,7 @@
 import fs from 'fs'
 import path from 'path'
 import util from "util"
-import http from 'http'
-import https from 'https'
+import { http, https } from 'follow-redirects'
 import home from 'home'
 import lame from 'lame'
 import _ from 'underscore'
