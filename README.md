@@ -101,6 +101,10 @@ Add a song to current `playlist`
 
 Play right now
 
+#### player.pause()
+
+Pause or resume, if already paused
+
 #### player.stop()
 
 Stop playing, unpipe the source stream

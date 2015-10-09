@@ -41,6 +41,7 @@ export default class Player extends EventEmitter {
     super()
 
     this.history = []
+    this.paused = false
     this.options = _.extend(defaults, params)
     this._list = format(songs || [], this.options.src)
     if (!this._list || !this._list.length) this._list = []
@@ -91,6 +92,7 @@ export default class Player extends EventEmitter {
     let self = this
     let song = this._list[index]
 
+    this.paused = false
     this.read(song[this.options.src], (err, pool) => {
       if (err)
         return this.emit('error', err)
@@ -100,13 +102,16 @@ export default class Player extends EventEmitter {
           song.meta = data
       })
 
+      this.lameStream = new lame.Decoder()
+
       pool
-        .pipe(new lame.Decoder())
+        .pipe(this.lameStream)
         .once('format', onPlaying)
         .once('finish', () => this.next())
 
       function onPlaying(f) {
-        var speaker = new Speaker(f)
+        self.lameFormat = f
+        var speaker = new Speaker(self.lameFormat)
 
         self.speaker = {
           'readableStream': this,
@@ -149,6 +154,22 @@ export default class Player extends EventEmitter {
       return callback(null, fs.createReadStream(file))
 
     this.download(src, callback)
+  }
+
+  /**
+   * [Pause or resume audio]
+   * @return {player} this
+   */
+  pause() {
+    if (this.paused) {
+      this.speaker.Speaker = new Speaker(this.lameFormat)
+      this.lameStream.pipe(this.speaker.Speaker)
+    } else {
+      this.speaker.Speaker.end()
+    }
+
+    this.paused = !this.paused
+    return this	
   }
 
   /**
