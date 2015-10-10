@@ -1,4 +1,5 @@
 import path from 'path'
+import keypress from 'keypress'
 import Player from '../dist/player'
 
 export default function() {
@@ -37,4 +38,26 @@ export default function() {
 
     return false
   }
+
+  keypress(process.stdin);
+
+  process.stdin.on('keypress', function (ch, key) {
+    if (key && key.ctrl && key.name == 'c') {
+      process.exit(0)
+    }
+    if (key && key.name == 'space') {
+      player.pause()
+    }
+    if (key && key.name == 'x') {
+      player.stop()
+    }
+    if (key && key.name == 's') {
+      player.play()
+    }
+  });
+
+  process.stdin.setRawMode(true)
+  process.stdin.resume()
+
+  console.log('press "x" to stop, press "s" to play, press "space" to pause / resume')
 }
