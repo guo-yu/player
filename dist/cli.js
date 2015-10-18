@@ -10,6 +10,10 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
+var _keypress = require('keypress');
+
+var _keypress2 = _interopRequireDefault(_keypress);
+
 var _distPlayer = require('../dist/player');
 
 var _distPlayer2 = _interopRequireDefault(_distPlayer);
@@ -45,6 +49,28 @@ exports['default'] = function () {
 
     return false;
   }
+
+  (0, _keypress2['default'])(process.stdin);
+
+  process.stdin.on('keypress', function (ch, key) {
+    if (key && key.ctrl && key.name == 'c') {
+      process.exit(0);
+    }
+    if (key && key.name == 'space') {
+      player.pause();
+    }
+    if (key && key.name == 'x') {
+      player.stop();
+    }
+    if (key && key.name == 's') {
+      player.play();
+    }
+  });
+
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+
+  console.log('press "x" to stop, press "s" to play, press "space" to pause / resume');
 };
 
 module.exports = exports['default'];
