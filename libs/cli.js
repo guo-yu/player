@@ -39,7 +39,16 @@ export default function() {
     return false
   }
 
+  var vol = 1
+
+  function updateVolume() {
+    player.setVolume(vol)
+    console.log('volume: ' + Math.floor(vol * 100))
+  }
+
   keypress(process.stdin);
+
+  var paused = false
 
   process.stdin.on('keypress', function (ch, key) {
     if (key && key.ctrl && key.name == 'c') {
@@ -47,12 +56,33 @@ export default function() {
     }
     if (key && key.name == 'space') {
       player.pause()
+      if(!paused)
+        console.log('paused')
+      else
+        console.log('resuming')
+      paused = !paused
     }
     if (key && key.name == 'x') {
       player.stop()
+      console.log('stopped')
     }
     if (key && key.name == 's') {
       player.play()
+      console.log('playing')
+    }
+    if (key && key.name == 'up') {
+      vol += 0.1;
+      if(vol > 1) {
+          vol = 1
+      }
+      updateVolume()
+    }
+    if (key && key.name == 'down') {
+      vol -= 0.1;
+      if(vol < 0) {
+          vol = 0
+      }
+      updateVolume()
     }
   });
 
@@ -60,4 +90,5 @@ export default function() {
   process.stdin.resume()
 
   console.log('press "x" to stop, press "s" to play, press "space" to pause / resume')
+  console.log('press "Up" to increase volume, press "Down" to decrease volume')
 }
