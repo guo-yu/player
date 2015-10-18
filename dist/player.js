@@ -68,6 +68,10 @@ var _events = require('events');
 
 var _utils = require('./utils');
 
+var _volume = require('pcm-volume');
+
+var _volume2 = _interopRequireDefault(_volume);
+
 var defaults = {
   'src': 'src',
   'cache': false,
@@ -170,7 +174,8 @@ var Player = (function (_EventEmitter) {
         });
 
         function onPlaying(f) {
-          var speaker = new _speaker2['default'](f);
+          var speaker = new _volume2['default']();
+          speaker.pipe(new _speaker2['default'](f));
 
           self.speaker = {
             'readableStream': this,
@@ -189,6 +194,18 @@ var Player = (function (_EventEmitter) {
       });
 
       return this;
+    }
+  }, {
+    key: 'setVolume',
+
+    /**
+     * [Set the volume of the stream]
+     * @param  {Number} volume [the volume as a percentage 0.0 - 1.0]
+     */
+    value: function setVolume(volume) {
+      if (!this.speaker) return;
+
+      this.speaker.Speaker.setVolume(volume);
     }
   }, {
     key: 'read',
