@@ -15,6 +15,7 @@ import lame from 'lame'
 import _ from 'underscore'
 import Speaker from 'speaker'
 import PoolStream from 'pool_stream'
+import Volume from 'pcm-volume'
 import { EventEmitter } from "events"
 import { fetchName, splitName, format, getProgress, chooseRandom } from './utils'
 
@@ -111,7 +112,8 @@ export default class Player extends EventEmitter {
 
       function onPlaying(f) {
         self.lameFormat = f
-        var speaker = new Speaker(self.lameFormat)
+        var speaker = new Volume()
+        speaker.pipe(new Speaker(self.lameFormat))
 
         self.speaker = {
           'readableStream': this,
@@ -132,6 +134,17 @@ export default class Player extends EventEmitter {
 
     return this
   }
+
+  /**
+   * [Set playback volume]
+   * @param  {Number}   volume   [Volume level percentage 0.0-1.0]
+   */
+   setVolume(volume) {
+       if(!this.speaker)
+           return;
+
+       this.speaker.Speaker.setVolume(volume);
+   }
 
   /**
    * [Read MP3 src and check if we're going to download it.]
@@ -162,7 +175,9 @@ export default class Player extends EventEmitter {
    */
   pause() {
     if (this.paused) {
-      this.speaker.Speaker = new Speaker(this.lameFormat)
+      this.speaker.Speaker = new Volume()
+      this.speaker.Speaker.pipe(new Speaker(this.lameFormat))
+
       this.lameStream.pipe(this.speaker.Speaker)
     } else {
       this.speaker.Speaker.end()
