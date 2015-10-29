@@ -1,6 +1,6 @@
 {
   "name": "player",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "a command line player, supports play mp3 both from url and local stream.",
   "main": "dist/player.js",
   "bin": "bin/cli",
