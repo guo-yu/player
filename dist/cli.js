@@ -57,7 +57,7 @@ exports['default'] = function () {
     console.log('volume: ' + Math.floor(vol * 100));
   }
 
-  (0, _keypress2['default'])(process.stdin);
+  _keypress2['default'](process.stdin);
 
   var paused = false;
 
