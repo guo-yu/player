@@ -31,7 +31,7 @@ player.play(function(err, player){
 });
 
 // create a player instance from playlist
-var player = Player([
+var player = new Player([
   __dirname + '/demo.mp3',
   __dirname + '/demo2.mp3',
   __dirname + '/demo.mp3',
