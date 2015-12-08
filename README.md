@@ -118,6 +118,11 @@ Switch to next song in the current playlist
 - `eventName`: Would be `playing`, `playend` or `error`
 - `callback`: The callback function
 
+### player.enable(options)
+
+- `options`: Can be `'stream'` or `'shuffle'`
+
+
 ### Contributing
 - Fork this repo
 - Clone your repo
