@@ -289,6 +289,30 @@ var Player = (function (_EventEmitter) {
       return this;
     }
   }, {
+    key: 'previous',
+
+    /**
+     * [Stop playing and switch to previous song,
+     * if there is no previous song, trigger a `No previous song` error event]
+     * @return {player} this
+     */
+    value: function previous() {
+      var list = this._list;
+      var current = this.playing;
+      var previousIndex = this.options.shuffle ? _utils.chooseRandom(_underscore2['default'].difference(list, [current._id])) : current._id - 1;
+
+      if (previousIndex < 0) {
+        this.emit('error', 'No previous song was found');
+        this.emit('finish', current);
+        return this;
+      }
+
+      this.stop();
+      this.play(previousIndex);
+
+      return this;
+    }
+  }, {
     key: 'add',
 
     /**
