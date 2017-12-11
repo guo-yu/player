@@ -232,6 +232,30 @@ export default class Player extends EventEmitter {
   }
 
   /**
+   * [Stop playing and switch to previous song,
+   * if there is no previous song, trigger a `No previous song` error event]
+   * @return {player} this
+   */
+  previous() {
+    let list = this._list
+    let current = this.playing
+    let previousIndex = this.options.shuffle ? 
+      chooseRandom(_.difference(list, [current._id])) :
+      current._id - 1
+
+    if (previousIndex < 0) {
+      this.emit('error', 'No previous song was found')
+      this.emit('finish', current)
+      return this
+    }
+
+    this.stop()
+    this.play(previousIndex)
+
+    return this
+  }
+
+  /**
    * [Add a new song to the playlist,
    * If provided `song` is a String, it will be converted to a `Song` Object.]
    * @param {String|Object} song [src URI of new song or the object of new song.]
