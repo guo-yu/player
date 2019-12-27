@@ -43,19 +43,19 @@
     "package.json"
   ],
   "dependencies": {
-    "async": "^0.9.0",
-    "follow-redirects": "0.0.7",
-    "home": "^0.1.3",
+    "async": "^3.1.0",
+    "follow-redirects": "1.9.0",
+    "home": "^2.0.0",
     "keypress": "^0.2.1",
     "lame": "^1.2.4",
     "pcm-volume": "^1.0.0",
-    "pool_stream": "0.0.2",
-    "speaker": "^0.2.6",
-    "underscore": "~1.6.0"
+    "pool_stream": "0.0.3",
+    "speaker": "^0.5.1",
+    "underscore": "~1.9.1"
   },
   "devDependencies": {
-    "babel": "^5.2.17",
-    "debug": "^2.1.0",
-    "musicmetadata": "1.0.1"
+    "babel": "^6.23.0",
+    "debug": "^4.1.1",
+    "musicmetadata": "2.0.5"
   }
 }
